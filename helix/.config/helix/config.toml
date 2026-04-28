@@ -1,0 +1,29 @@
+[editor]
+line-number = "relative"
+mouse = false
+auto-save = true
+completion-trigger-len = 1
+color-modes = true
+bufferline = "always"
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name"]
+center = ["file-type"]
+right = ["diagnostics", "position", "total-line-numbers"]
+
+[editor.indent-guides]
+render = true
+
+[keys.normal]
+"C-s" = ":w"           # Ctrl+S to save
+"C-q" = ":q"           # Ctrl+Q to quit
+"C-/" = "toggle_comments" # Ctrl+/ to comment
+esc = ["collapse_selection", "keep_primary_selection"]
