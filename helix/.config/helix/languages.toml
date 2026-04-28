@@ -107,7 +107,7 @@ public class $1 {
 
 [[snippet]]
 language = "java"
-name = "classf"
+name = "classfull"
 prefix = ["classf"]
 body = """
 public class $1 {
