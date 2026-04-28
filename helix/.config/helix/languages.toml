@@ -4,18 +4,21 @@ language-servers = ["jdtls"]
 auto-format = true
 indent = { tab-width = 4, unit = "    " }
 
+# sout → print a value to the console
 [[snippet]]
 language = "java"
 name = "sout"
 prefix = ["sout"]
 body = "System.out.println($1);"
 
+# soutv → print a variable with its name shown
 [[snippet]]
 language = "java"
 name = "soutv"
 prefix = ["soutv"]
 body = "System.out.println(\"$1 = \" + $1);"
 
+# main → entry point of any Java program
 [[snippet]]
 language = "java"
 name = "main"
@@ -25,6 +28,7 @@ public static void main(String[] args) {
     $1
 }"""
 
+# fori → for loop with a counter i
 [[snippet]]
 language = "java"
 name = "fori"
@@ -34,6 +38,7 @@ for (int i = 0; i < $1; i++) {
     $2
 }"""
 
+# foreach → loop over every item in a list
 [[snippet]]
 language = "java"
 name = "foreach"
@@ -43,19 +48,21 @@ for ($1 $2 : $3) {
     $4
 }"""
 
+# whileloop → repeat while a condition is true
 [[snippet]]
 language = "java"
-name = "while"
-prefix = ["while"]
+name = "whileloop"
+prefix = ["whileloop"]
 body = """
 while ($1) {
     $2
 }"""
 
+# trycatch → handle errors with try / catch
 [[snippet]]
 language = "java"
-name = "try"
-prefix = ["try"]
+name = "trycatch"
+prefix = ["trycatch"]
 body = """
 try {
     $1
@@ -63,10 +70,11 @@ try {
     e.printStackTrace();
 }"""
 
+# tryfinally → try / catch with a finally block that always runs
 [[snippet]]
 language = "java"
-name = "tryfin"
-prefix = ["tryfin"]
+name = "tryfinally"
+prefix = ["tryfinally"]
 body = """
 try {
     $1
@@ -76,19 +84,21 @@ try {
     $3
 }"""
 
+# ifblock → basic if block
 [[snippet]]
 language = "java"
-name = "if"
-prefix = ["if"]
+name = "ifblock"
+prefix = ["ifblock"]
 body = """
 if ($1) {
     $2
 }"""
 
+# ifelseblock → if with an else branch
 [[snippet]]
 language = "java"
-name = "ifelse"
-prefix = ["ifelse"]
+name = "ifelseblock"
+prefix = ["ifelseblock"]
 body = """
 if ($1) {
     $2
@@ -96,35 +106,41 @@ if ($1) {
     $3
 }"""
 
+# classblock → empty public class shell
 [[snippet]]
 language = "java"
-name = "class"
-prefix = ["class"]
+name = "classblock"
+prefix = ["classblock"]
 body = """
 public class $1 {
     $2
 }"""
 
+# classfull → full class with fields, constructor, getters/setters, toString
 [[snippet]]
 language = "java"
-name = "classf"
-prefix = ["classf"]
+name = "classfull"
+prefix = ["classfull"]
 body = """
 public class $1 {
     // Fields
     $2
+
     // Constructor
     public $1($3) {
         $4
     }
+
     // Getters & Setters
     $5
+
     @Override
     public String toString() {
-        return "$1{" + $6 + "}";
+        return '$1{' + $6 + '}';
     }
 }"""
 
+# getter → method to read a private field
 [[snippet]]
 language = "java"
 name = "getter"
@@ -134,6 +150,7 @@ public $1 get$2() {
     return $3;
 }"""
 
+# setter → method to update a private field
 [[snippet]]
 language = "java"
 name = "setter"
@@ -143,42 +160,49 @@ public void set$1($2 $3) {
     this.$3 = $3;
 }"""
 
+# arraylist → ordered list you can add/remove from
 [[snippet]]
 language = "java"
-name = "list"
-prefix = ["list"]
+name = "arraylist"
+prefix = ["arraylist"]
 body = "List<$1> $2 = new ArrayList<>();"
 
+# hashmap → key/value pairs (like a dictionary)
 [[snippet]]
 language = "java"
-name = "map"
-prefix = ["map"]
+name = "hashmap"
+prefix = ["hashmap"]
 body = "Map<$1, $2> $3 = new HashMap<>();"
 
+# hashset → collection with no duplicates allowed
 [[snippet]]
 language = "java"
-name = "set"
-prefix = ["set"]
+name = "hashset"
+prefix = ["hashset"]
 body = "Set<$1> $2 = new HashSet<>();"
 
+# lambda → short anonymous function
 [[snippet]]
 language = "java"
 name = "lambda"
 prefix = ["lambda"]
 body = "($1) -> $2"
 
+# stream → filter/transform a list with a pipeline
 [[snippet]]
 language = "java"
 name = "stream"
 prefix = ["stream"]
 body = "$1.stream().$2.collect(Collectors.$3);"
 
+# optional → safely wrap a value that might be null
 [[snippet]]
 language = "java"
 name = "optional"
 prefix = ["optional"]
 body = "Optional<$1> $2 = Optional.ofNullable($3);"
 
+# test → JUnit test with Arrange / Act / Assert sections
 [[snippet]]
 language = "java"
 name = "test"
@@ -194,6 +218,7 @@ public void $1() {
     $4
 }"""
 
+# entity → database table class with an auto-generated id
 [[snippet]]
 language = "java"
 name = "entity"
@@ -210,6 +235,7 @@ public class $2 {
     $4
 }"""
 
+# service → @Service with findAll / findById / save / delete
 [[snippet]]
 language = "java"
 name = "service"
@@ -234,6 +260,7 @@ public class $1Service {
     }
 }"""
 
+# repo → repository interface for database queries
 [[snippet]]
 language = "java"
 name = "repo"
