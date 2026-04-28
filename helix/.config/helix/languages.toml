@@ -107,25 +107,21 @@ public class $1 {
 
 [[snippet]]
 language = "java"
-name = "classfull"
+name = "classf"
 prefix = ["classf"]
 body = """
 public class $1 {
-
     // Fields
     $2
-
     // Constructor
     public $1($3) {
         $4
     }
-
     // Getters & Setters
     $5
-
     @Override
     public String toString() {
-        return \"$1{\" + $6 + \"}\";
+        return "$1{" + $6 + "}";
     }
 }"""
 
@@ -192,10 +188,8 @@ body = """
 public void $1() {
     // Arrange
     $2
-
     // Act
     $3
-
     // Assert
     $4
 }"""
@@ -206,17 +200,13 @@ name = "entity"
 prefix = ["entity"]
 body = """
 @Entity
-@Table(name = \"$1\")
+@Table(name = "$1")
 public class $2 {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     $3
-
     public $2() {}
-
     $4
 }"""
 
@@ -227,23 +217,18 @@ prefix = ["service"]
 body = """
 @Service
 public class $1Service {
-
     @Autowired
     private $1Repository $2Repository;
-
     public List<$1> findAll() {
         return $2Repository.findAll();
     }
-
     public $1 findById(Long id) {
         return $2Repository.findById(id)
-            .orElseThrow(() -> new RuntimeException(\"$1 not found\"));
+            .orElseThrow(() -> new RuntimeException("$1 not found"));
     }
-
     public $1 save($1 $2) {
         return $2Repository.save($2);
     }
-
     public void deleteById(Long id) {
         $2Repository.deleteById(id);
     }
