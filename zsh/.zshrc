@@ -74,81 +74,81 @@ fi
 # =============================================================
 # ALIASES - GENERAL
 # =============================================================
-alias reload='source ~/.zshrc'
-alias zshrc='code ~/.zshrc'
-alias dotfiles='code ~/dotfiles'
-alias ll='eza -al --icons'
-alias ls='eza --icons'
-alias lt='eza --tree --icons'
-alias cat='bat'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias o='open .'
-alias localip='ipconfig getifaddr en0'
-alias publicip='curl -s ifconfig.me'
-alias c='clear'
+alias reload='source ~/.zshrc'       # Reload terminal config
+alias zshrc='code ~/.zshrc'          # Edit terminal config
+alias dotfiles='code ~/dotfiles'     # Open dotfiles folder
+alias ll='eza -al --icons'           # List files with details
+alias ls='eza --icons'               # List files with icons
+alias lt='eza --tree --icons'        # List files as tree
+alias cat='bat'                      # Better file viewer
+alias ..='cd ..'                     # Go up one folder
+alias ...='cd ../..'                 # Go up two folders
+alias o='open .'                     # Open folder in Finder
+alias localip='ipconfig getifaddr en0' # Show local IP
+alias publicip='curl -s ifconfig.me'   # Show public IP
+alias c='clear'                      # Clear terminal
 
 # =============================================================
 # ALIASES - GIT
 # =============================================================
-alias g='git'
-alias gs='git status'
-alias ga='git add'
-alias gaa='git add .'
-alias gcm='git commit -m'
-alias gp='git push'
-alias gpul='git pull'
-alias gco='git checkout'
-alias gcb='git checkout -b'
-alias gb='git branch'
-alias gbd='git branch --delete'
-alias glog='git log --oneline --decorate --graph'
-alias gd='git diff'
-alias gundo='git reset --soft HEAD~1'
-alias gst='git stash'
-alias gstp='git stash pop'
+alias g='git'                        # Shorthand for git
+alias gs='git status'                # Show changes
+alias ga='git add'                   # Stage a file
+alias gaa='git add .'                # Stage all files
+alias gcm='git commit -m'            # Commit with message
+alias gp='git push'                  # Push to remote
+alias gpul='git pull'                # Pull from remote
+alias gco='git checkout'             # Switch branch
+alias gcb='git checkout -b'          # Create new branch
+alias gb='git branch'                # List branches
+alias gbd='git branch --delete'      # Delete branch
+alias glog='git log --oneline --decorate --graph' # Pretty log
+alias gd='git diff'                  # Show differences
+alias gundo='git reset --soft HEAD~1' # Undo last commit
+alias gst='git stash'                # Stash changes
+alias gstp='git stash pop'           # Restore stashed changes
 alias gpsup='git push --set-upstream origin $(git_current_branch)'
 alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
 
 # =============================================================
 # ALIASES - MAVEN
 # =============================================================
-alias mvnc='mvn clean'
-alias mvni='mvn clean install'
-alias mvnr='mvn spring-boot:run'
-alias mvnt='mvn test'
-alias mvnci='mvn clean install -DskipTests'
+alias mvnc='mvn clean'               # Clean build
+alias mvni='mvn clean install'       # Clean and install
+alias mvnr='mvn spring-boot:run'     # Run Spring Boot app
+alias mvnt='mvn test'                # Run tests
+alias mvnci='mvn clean install -DskipTests' # Install skip tests
 
 # =============================================================
 # ALIASES - DOCKER
 # =============================================================
-alias dkps='docker ps'
-alias dklog='docker logs -f'
-alias dkex='docker exec -it'
-alias dkcu='docker compose up -d'
-alias dkcd='docker compose down'
-alias dkcub='docker compose up --build'
-alias dkprune='docker system prune -af'
+alias dkps='docker ps'               # List running containers
+alias dklog='docker logs -f'         # Follow container logs
+alias dkex='docker exec -it'         # Enter container shell
+alias dkcu='docker compose up -d'    # Start containers
+alias dkcd='docker compose down'     # Stop containers
+alias dkcub='docker compose up --build' # Rebuild and start
+alias dkprune='docker system prune -af' # Remove unused data
 
 # =============================================================
 # ALIASES - POSTGRESQL
 # =============================================================
-alias pgstart='brew services start postgresql@16'
-alias pgstop='brew services stop postgresql@16'
-alias pgconn='psql -U postgres'
+alias pgstart='brew services start postgresql@16' # Start Postgres
+alias pgstop='brew services stop postgresql@16'   # Stop Postgres
+alias pgconn='psql -U postgres'                   # Connect to Postgres
 
 # =============================================================
 # ALIASES - REDIS
 # =============================================================
-alias redstart='brew services start redis'
-alias redstop='brew services stop redis'
-alias redcli='redis-cli'
+alias redstart='brew services start redis' # Start Redis
+alias redstop='brew services stop redis'   # Stop Redis
+alias redcli='redis-cli'                   # Open Redis CLI
 
 # =============================================================
 # ALIASES - GHOSTTY
 # =============================================================
-alias ghostty-config='code ~/.config/ghostty/config'
-alias ghostty-reload='kill -USR1 $(pgrep ghostty)'
+alias ghostty-config='code ~/.config/ghostty/config' # Edit Ghostty config
+alias ghostty-reload='pkill -USR1 ghostty'            # Reload Ghostty
 
 # =============================================================
 # FUNCTIONS
@@ -181,13 +181,13 @@ springnew() {
 
 # Create .env for Spring Boot
 envnew() {
-  cat > .env << EOF
+  cat > .env << ENVEOF
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/dbname
 SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_PASSWORD=password
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 SERVER_PORT=8080
-EOF
+ENVEOF
   echo ".env created"
 }
 
@@ -203,12 +203,95 @@ stowit() { cd ~/dotfiles && stow "$1" && cd - }
 unstowit() { cd ~/dotfiles && stow -D "$1" && cd - }
 
 # =============================================================
+# HELP - Type 'help' to see all your shortcuts
+# =============================================================
+help() {
+  echo "
+  ╔══════════════════════════════════════╗
+  ║       YOUR TERMINAL CHEATSHEET       ║
+  ╚══════════════════════════════════════╝
+
+  📁 NAVIGATION
+  ll          list files with details
+  ls          list files with icons
+  lt          list files as tree
+  ..          go up one folder
+  ...         go up two folders
+  o           open folder in Finder
+  c           clear terminal
+
+  ⚙️  CONFIG
+  reload      reload terminal config
+  zshrc       edit terminal config
+  dotfiles    open dotfiles in VS Code
+
+  🌐 NETWORK
+  localip     show your local IP
+  publicip    show your public IP
+
+  🐙 GIT
+  gs          git status
+  gaa         git add all files
+  gcm 'msg'   git commit -m
+  gp          git push
+  gpul        git pull
+  gcb 'name'  create new branch
+  glog        pretty git log
+  gundo       undo last commit
+  gacp 'msg'  add + commit + push
+
+  ☕ MAVEN
+  mvnr        run Spring Boot app
+  mvni        clean install
+  mvnt        run tests
+  mvnci       install skip tests
+
+  🐳 DOCKER
+  dkcu        start containers
+  dkcd        stop containers
+  dkps        list containers
+  dklog       follow logs
+  dkprune     remove unused data
+
+  🐘 POSTGRESQL
+  pgstart     start postgres
+  pgstop      stop postgres
+  pgconn      connect to postgres
+
+  🔴 REDIS
+  redstart    start redis
+  redstop     stop redis
+  redcli      open redis cli
+
+  👻 GHOSTTY
+  ghostty-config   edit ghostty config
+  ghostty-reload   reload ghostty
+
+  🛠️  FUNCTIONS
+  mkcd 'name'      make dir and cd into it
+  killport 8080    kill process on port
+  ports            check dev ports status
+  springnew 'name' create Spring Boot project
+  envnew           create .env file
+  jsonpp 'json'    pretty print JSON
+  stowit 'pkg'     stow a dotfile package
+  "
+}
+
+# =============================================================
 # KEYBINDINGS
 # =============================================================
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 bindkey '^[[1;5C' forward-word   # Ctrl+Right
 bindkey '^[[1;5D' backward-word  # Ctrl+Left
+
+# =============================================================
+# WELCOME MESSAGE
+# =============================================================
+echo "👋 Welcome back, $(whoami)!"
+echo "📅 $(date '+%A, %d %B %Y')"
+echo "💡 Type 'help' to see all your shortcuts"
 
 # =============================================================
 # POWERLEVEL10K (keep at very bottom)
