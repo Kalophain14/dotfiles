@@ -110,7 +110,7 @@ alias gundos='git reset --soft HEAD~1' # Undo last commit, keep changes staged
 alias gundoh='git reset --hard HEAD~1' # Hard reset, discard all changes
 alias gundomh='git reset --mixed HEAD~1' # Undo last commit, unstage changes
 alias gst='git stash'                # Stash changes
-alias gsr='git stash pop'           # Restore stashed changes
+alias gsp='git stash pop'           # Restore stashed changes
 alias gpsup='git push --set-upstream origin $(git_current_branch)'
 alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
 
