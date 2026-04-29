@@ -1,4 +1,3 @@
- =============================================================
 # =============================================================
 # POWERLEVEL10K INSTANT PROMPT (keep at very top)
 # =============================================================
@@ -48,7 +47,7 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 
 # NVM
 export NVM_DIR="$HOME/.nvm"
-[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && source "/opt/homebrew/opt/nvm/nvm.sh"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && source "/opt/homebrew/opt/nvm/nvm.sh" --no-use
 
 # FZF
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
@@ -104,11 +103,14 @@ alias gco='git checkout'             # Switch branch
 alias gcb='git checkout -b'          # Create new branch
 alias gb='git branch'                # List branches
 alias gbd='git branch --delete'      # Delete branch
-alias glog='git log --oneline --decorate --graph' # Pretty log
+alias glog='git log --graph --pretty=format:"%C(yellow)%h%Creset -%C(cyan)%d%Creset %s %C(green)(%cr)%Creset %C(blue)<%ae>%Creset" --abbrev-commit --all'
 alias gd='git diff'                  # Show differences
-alias gundo='git reset --soft HEAD~1' # Undo last commit
+alias gundo='git reset'               # Undo last commit with hash
+alias gundos='git reset --soft HEAD~1' # Undo last commit, keep changes staged
+alias gundoh='git reset --hard HEAD~1' # Hard reset, discard all changes
+alias gundomh='git reset --mixed HEAD~1' # Undo last commit, unstage changes
 alias gst='git stash'                # Stash changes
-alias gstp='git stash pop'           # Restore stashed changes
+alias gsr='git stash pop'           # Restore stashed changes
 alias gpsup='git push --set-upstream origin $(git_current_branch)'
 alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
 
@@ -288,12 +290,21 @@ bindkey '^[[B' history-substring-search-down
 bindkey '^[[1;5C' forward-word   # Ctrl+Right
 bindkey '^[[1;5D' backward-word  # Ctrl+Left
 
+
 # =============================================================
 # WELCOME MESSAGE
 # =============================================================
-echo "👋 Welcome back, $(whoami)!"
-echo "📅 $(date '+%A, %d %B %Y')"
-echo "💡 Type 'help' to see all your shortcuts"
+(( ${+commands[zsh-defer]} )) || {
+  typeset -g _welcome_shown=0
+  precmd() {
+    if (( ! _welcome_shown )); then
+      _welcome_shown=1
+      print "👋 Welcome back, $(whoami)!"
+      print "📅 $(date '+%A, %d %B %Y')"
+      print "💡 Type 'help' to see all your shortcuts"
+    fi
+  }
+}
 
 # =============================================================
 # POWERLEVEL10K (keep at very bottom)
