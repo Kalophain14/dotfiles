@@ -97,6 +97,7 @@ alias gs='git status'                # Show changes
 alias ga='git add'                   # Stage a file
 alias gaa='git add .'                # Stage all files
 alias gcm='git commit -m'            # Commit with message
+alias gacm='git add . && git commit -m' # Add all and commit
 alias gp='git push'                  # Push to remote
 alias gpul='git pull'                # Pull from remote
 alias gco='git checkout'             # Switch branch
@@ -109,10 +110,14 @@ alias gundo='git reset'               # Undo last commit with hash
 alias gundos='git reset --soft HEAD~1' # Undo last commit, keep changes staged
 alias gundoh='git reset --hard HEAD~1' # Hard reset, discard all changes
 alias gundomh='git reset --mixed HEAD~1' # Undo last commit, unstage changes
-alias gst='git stash'                # Stash changes
-alias gsp='git stash pop'           # Restore stashed changes
+alias gst='git stash'                 # Stash changes
+alias gsp='git stash pop'             # Restore stashed changes
+alias gsc='git clean'                 # Stash clean
 alias gpsup='git push --set-upstream origin $(git_current_branch)'
 alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
+alias grb='git rebase -i'      # Interactive rebase
+alias grbc='git rebase --continue'   # Continue rebase after resolving conflicts
+alias grba='git rebase --abort'      # Abort rebase
 
 # =============================================================
 # ALIASES - MAVEN
@@ -216,69 +221,106 @@ help() {
   ╚══════════════════════════════════════╝
 
   📁 NAVIGATION
-  ll          list files with details
-  ls          list files with icons
-  lt          list files as tree
-  ..          go up one folder
-  ...         go up two folders
-  o           open folder in Finder
-  c           clear terminal
+  ll              list files with details
+  ls              list files with icons
+  lt              list files as tree
+  ..              go up one folder
+  ...             go up two folders
+  o               open folder in Finder
+  c               clear terminal
+  mkcd 'name'     make dir and cd into it
 
   ⚙️  CONFIG
-  reload      reload terminal config
-  zshrc       edit terminal config
-  dotfiles    open dotfiles in VS Code
+  reload          reload terminal config
+  zshrc           edit terminal config
+  dotfiles        open dotfiles in VS Code
 
   🌐 NETWORK
-  localip     show your local IP
-  publicip    show your public IP
+  localip         show your local IP
+  publicip        show your public IP
+  killport 8080   kill process on port
+  ports           check dev ports status
 
-  🐙 GIT
-  gs          git status
-  gaa         git add all files
-  gcm 'msg'   git commit -m
-  gp          git push
-  gpul        git pull
-  gcb 'name'  create new branch
-  glog        pretty git log
-  gundo       undo last commit
-  gacp 'msg'  add + commit + push
+  🐙 GIT — STATUS & STAGING
+  gs              git status
+  ga 'file'       stage a file
+  gaa             stage all files
+  gd              show diff
+  glog            pretty graph log
+
+  🐙 GIT — COMMITS
+  gcm 'msg'       commit with message
+  gacm 'msg'      add all + commit
+  gacp 'msg'      add all + commit + push
+  gundo           undo last commit (with hash)
+  gundos          undo commit, keep changes staged
+  gundoh          hard reset, discard all changes
+  gundomh         undo commit, unstage changes
+
+  🐙 GIT — PUSH & PULL
+  gp              push to remote
+  gpul            pull from remote
+  gpsup           push and set upstream origin
+
+  🐙 GIT — BRANCHES
+  gco             checkout branch
+  gcb 'name'      create new branch
+  gb              list branches
+  gbd 'name'      delete branch
+
+  🐙 GIT — STASH
+  gst             stash changes
+  gsp             restore stashed changes
+  gsc             clean stash
+
+  🐙 GIT — REBASE
+  grb             interactive rebase
+  grbc            continue rebase after conflicts
+  grba            abort rebase
+  ghopen          open repo on GitHub
 
   ☕ MAVEN
-  mvnr        run Spring Boot app
-  mvni        clean install
-  mvnt        run tests
-  mvnci       install skip tests
+  mvnr            run Spring Boot app
+  mvni            clean install
+  mvnc            clean build
+  mvnt            run tests
+  mvnci           install, skip tests
 
-  🐳 DOCKER
-  dkcu        start containers
-  dkcd        stop containers
-  dkps        list containers
-  dklog       follow logs
-  dkprune     remove unused data
+  🐳 DOCKER — CONTAINERS
+  dkps            list running containers
+  dklog 'name'    follow container logs
+  dkex 'name'     enter container shell
+  dkprune         remove all unused data
+
+  🐳 DOCKER — COMPOSE
+  dkcu            start containers (detached)
+  dkcd            stop containers
+  dkcub           rebuild and start
 
   🐘 POSTGRESQL
-  pgstart     start postgres
-  pgstop      stop postgres
-  pgconn      connect to postgres
+  pgstart         start postgres
+  pgstop          stop postgres
+  pgconn          connect as postgres user
 
   🔴 REDIS
-  redstart    start redis
-  redstop     stop redis
-  redcli      open redis cli
+  redstart        start redis
+  redstop         stop redis
+  redcli          open redis CLI
 
   👻 GHOSTTY
-  ghostty-config   edit ghostty config
-  ghostty-reload   reload ghostty
+  ghostty-config  edit ghostty config
+  ghostty-reload  reload ghostty
 
-  🛠️  FUNCTIONS
-  mkcd 'name'      make dir and cd into it
-  killport 8080    kill process on port
-  ports            check dev ports status
-  springnew 'name' create Spring Boot project
-  envnew           create .env file
-  jsonpp 'json'    pretty print JSON
-  stowit 'pkg'     stow a dotfile package
+  🌱 SPRING / PROJECT
+  springnew 'n'   scaffold Spring Boot project
+  envnew          create .env template
+  springup        docker up + mvn run
+  springdown      docker compose down
+
+  🛠️  UTILITIES
+  jsonpp 'json'   pretty print JSON
+  stowit 'pkg'    stow a dotfile package
+  unstowit 'pkg'  unstow a dotfile package
   "
 }
 
