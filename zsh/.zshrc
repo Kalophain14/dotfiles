@@ -169,8 +169,6 @@ alias ghostty-reload='pkill -USR1 ghostty'            # Reload Ghostty
 # ALIASES - HELIX
 # =============================================================
 alias hx='helix'                           # Open Helix editor
-alias hxc='helix ~/.config/helix/config.toml' # Edit Helix config
-alias hxl='helix ~/.config/helix/languages.toml' # Edit Helix languages
 
 # =============================================================
 # ALIASES - LAZYGIT & LAZYDOCKER
@@ -339,8 +337,6 @@ help() {
 
   🪶 HELIX
   hx              open helix editor
-  hxc             edit helix config
-  hxl             edit helix languages config
 
   🔀 LAZYGIT & LAZYDOCKER
   lg              open lazygit TUI
