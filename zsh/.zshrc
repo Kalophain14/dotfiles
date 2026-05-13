@@ -57,6 +57,12 @@ export FZF_DEFAULT_OPTS='--height 40% --border'
 # Zoxide (replaces cd)
 eval "$(zoxide init zsh)"
 
+# Thefuck (auto-correct mistyped commands)
+eval $(thefuck --alias)
+
+# Delta (better git diff) - set in gitconfig, but ensure it's on PATH
+export PATH="/opt/homebrew/bin:$PATH"
+
 # Direnv
 _direnv_hook() {
   trap -- '' SIGINT
@@ -158,6 +164,26 @@ alias redcli='redis-cli'                   # Open Redis CLI
 # =============================================================
 alias ghostty-config='code ~/.config/ghostty/config' # Edit Ghostty config
 alias ghostty-reload='pkill -USR1 ghostty'            # Reload Ghostty
+
+# =============================================================
+# ALIASES - HELIX
+# =============================================================
+alias hx='helix'                           # Open Helix editor
+alias hxc='helix ~/.config/helix/config.toml' # Edit Helix config
+alias hxl='helix ~/.config/helix/languages.toml' # Edit Helix languages
+
+# =============================================================
+# ALIASES - LAZYGIT & LAZYDOCKER
+# =============================================================
+alias lg='lazygit'                         # Open lazygit TUI
+alias ld='lazydocker'                      # Open lazydocker TUI
+
+# =============================================================
+# ALIASES - NEW TOOLS
+# =============================================================
+alias http='http'                          # HTTPie - test HTTP endpoints
+alias pp='prettyping'                      # Prettier ping
+alias top='btop'                           # Better top/htop
 
 # =============================================================
 # FUNCTIONS
@@ -310,6 +336,15 @@ help() {
   👻 GHOSTTY
   ghostty-config  edit ghostty config
   ghostty-reload  reload ghostty
+
+  🪶 HELIX
+  hx              open helix editor
+  hxc             edit helix config
+  hxl             edit helix languages config
+
+  🔀 LAZYGIT & LAZYDOCKER
+  lg              open lazygit TUI
+  ld              open lazydocker TUI
 
   🌱 SPRING / PROJECT
   springnew 'n'   scaffold Spring Boot project
