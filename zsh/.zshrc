@@ -12,7 +12,7 @@ typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 ZSH_DISABLE_COMPFIX=true
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting z fzf)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting z fzf zsh-history-substring-search)
 source $ZSH/oh-my-zsh.sh
 
 # =============================================================
@@ -112,7 +112,7 @@ alias gundoh='git reset --hard HEAD~1' # Hard reset, discard all changes
 alias gundomh='git reset --mixed HEAD~1' # Undo last commit, unstage changes
 alias gst='git stash'                 # Stash changes
 alias gsp='git stash pop'             # Restore stashed changes
-alias gsc='git clean'                 # Stash clean
+alias gsc='git clean'                 # Remove untracked files
 alias gpsup='git push --set-upstream origin $(git_current_branch)'
 alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
 alias grb='git rebase -i'      # Interactive rebase
