@@ -39,8 +39,8 @@ export VISUAL='code'
 export PATH="$HOME/.local/bin:$PATH"
 
 # Java / Spring Boot
-export JAVA_HOME="/opt/homebrew/opt/openjdk@21"
-export PATH="$JAVA_HOME/bin:$PATH"
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Contents/Home
+export PATH=$JAVA_HOME/bin:$PATH
 
 # PostgreSQL
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
