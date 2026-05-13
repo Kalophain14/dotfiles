@@ -12,7 +12,7 @@ typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 ZSH_DISABLE_COMPFIX=true
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting z fzf zsh-history-substring-search)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting z fzf)
 source $ZSH/oh-my-zsh.sh
 
 # =============================================================
