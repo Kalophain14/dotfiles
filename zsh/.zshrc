@@ -98,32 +98,34 @@ alias c='clear'                      # Clear terminal
 # =============================================================
 # ALIASES - GIT
 # =============================================================
-alias g='git'                        # Shorthand for git
-alias gs='git status'                # Show changes
-alias ga='git add'                   # Stage a file
-alias gaa='git add .'                # Stage all files
-alias gcm='git commit -m'            # Commit with message
-alias gacm='git add . && git commit -m' # Add all and commit
-alias gp='git push'                  # Push to remote
-alias gpul='git pull'                # Pull from remote
-alias gco='git checkout'             # Switch branch
-alias gcb='git checkout -b'          # Create new branch
-alias gb='git branch'                # List branches
-alias gbd='git branch --delete'      # Delete branch
+alias g='git'                                        # Shorthand for git
+alias gs='git status'                                # Show changes
+alias ga='git add'                                   # Stage a file
+alias gaa='git add .'                                # Stage all files
+alias gcm='git commit -m'                            # Commit with message
+alias gacm='git add . && git commit -m'              # Add all and commit
+alias gp='git push'                                  # Push to remote
+alias gpul='git pull'                                # Pull from remote
+alias gco='git checkout'                             # Switch branch
+alias gcb='git checkout -b'                          # Create new branch
+alias gb='git branch'                                # List branches
+alias gbd='git branch --delete'                      # Delete branch
 alias glog='git log --graph --pretty=format:"%C(yellow)%h%Creset -%C(cyan)%d%Creset %s %C(green)(%cr)%Creset %C(blue)<%ae>%Creset" --abbrev-commit --all'
-alias gd='git diff'                  # Show differences
-alias gundo='git reset'               # Undo last commit with hash
-alias gundos='git reset --soft HEAD~1' # Undo last commit, keep changes staged
-alias gundoh='git reset --hard HEAD~1' # Hard reset, discard all changes
-alias gundomh='git reset --mixed HEAD~1' # Undo last commit, unstage changes
-alias gst='git stash'                 # Stash changes
-alias gsp='git stash pop'             # Restore stashed changes
-alias gsc='git clean'                 # Remove untracked files
+alias gd='git diff'                                  # Show differences
+alias gundo='git reset'                              # Undo last commit with hash
+alias gundos='git reset --soft HEAD~1'               # Undo last commit, keep changes staged
+alias gundoh='git reset --hard HEAD~1'               # Hard reset, discard all changes
+alias gundomh='git reset --mixed HEAD~1'             # Undo last commit, unstage changes
+alias gst='git stash'                                # Stash changes
+alias gsp='git stash pop'                            # Restore stashed changes
+alias gsc='git clean'                                # Remove untracked files
 alias gpsup='git push --set-upstream origin $(git_current_branch)'
 alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
-alias grb='git rebase -i'      # Interactive rebase
-alias grbc='git rebase --continue'   # Continue rebase after resolving conflicts
-alias grba='git rebase --abort'      # Abort rebase
+alias grb='git rebase -i'                            # Interactive rebase
+alias grbc='git rebase --continue'                   # Continue rebase after resolving conflicts
+alias grba='git rebase --abort'                      # Abort rebase
+alias gtree='git log --graph --oneline --decorate --all' # Visual commit tree
+alias ghb='git bisect'                               # Bisect to track down bugs
 
 # =============================================================
 # ALIASES - MAVEN
@@ -266,11 +268,13 @@ help() {
   ports           check dev ports status
 
   🐙 GIT — STATUS & STAGING
+  g               git (shorthand)
   gs              git status
   ga 'file'       stage a file
   gaa             stage all files
   gd              show diff
   glog            pretty graph log
+  gtree           visual commit tree (all branches)
 
   🐙 GIT — COMMITS
   gcm 'msg'       commit with message
@@ -295,13 +299,19 @@ help() {
   🐙 GIT — STASH
   gst             stash changes
   gsp             restore stashed changes
-  gsc             clean stash
+  gsc             clean untracked files
 
   🐙 GIT — REBASE
   grb             interactive rebase
   grbc            continue rebase after conflicts
   grba            abort rebase
   ghopen          open repo on GitHub
+
+  🐛 GIT — BISECT (bug tracking)
+  ghb start       start bisect session
+  ghb bad         mark current commit as bad
+  ghb good <sha>  mark a known-good commit
+  ghb reset       end bisect session
 
   ☕ MAVEN
   mvnr            run Spring Boot app
@@ -349,6 +359,9 @@ help() {
   springdown      docker compose down
 
   🛠️  UTILITIES
+  http            HTTPie - test HTTP endpoints
+  pp              prettier ping
+  top             better top (btop)
   jsonpp 'json'   pretty print JSON
   stowit 'pkg'    stow a dotfile package
   unstowit 'pkg'  unstow a dotfile package
@@ -362,7 +375,6 @@ bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 bindkey '^[[1;5C' forward-word   # Ctrl+Right
 bindkey '^[[1;5D' backward-word  # Ctrl+Left
-
 
 # =============================================================
 # WELCOME MESSAGE
