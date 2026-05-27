@@ -184,6 +184,8 @@ alias ld='lazydocker'                      # Open lazydocker TUI
 alias http='http'                          # HTTPie - test HTTP endpoints
 alias pp='prettyping'                      # Prettier ping
 alias top='btop'                           # Better top/htop
+alias myip='echo "Local: $(ipconfig getifaddr en0) | Public: $(curl -s ifconfig.me)"' # Show both IPs
+alias weather='curl wttr.in'               # Quick weather in terminal
 
 # =============================================================
 # FUNCTIONS
@@ -362,6 +364,8 @@ help() {
   http            HTTPie - test HTTP endpoints
   pp              prettier ping
   top             better top (btop)
+  myip            show local + public IP in one shot
+  weather         quick weather in terminal
   jsonpp 'json'   pretty print JSON
   stowit 'pkg'    stow a dotfile package
   unstowit 'pkg'  unstow a dotfile package
