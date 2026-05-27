@@ -366,6 +366,14 @@ help() {
   springup        docker up + mvn run
   springdown      docker compose down
 
+  🔒 SECURITY
+  connections     all open network connections
+  procs           clean running process list
+  camon           check what is using your camera
+  ports-all       all listening ports
+  rkhunt          run rootkit scan
+  checksec        run ALL security checks at once
+
   🛠️  UTILITIES
   http            HTTPie - test HTTP endpoints
   pp              prettier ping
@@ -412,3 +420,28 @@ bindkey '^[[1;5D' backward-word  # Ctrl+Left
 # POWERLEVEL10K (keep at very bottom)
 # =============================================================
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# =============================================================
+# ALIASES - SECURITY
+# =============================================================
+alias connections='sudo lsof -i'                    # All open network connections
+alias procs='ps aux | grep -v grep'                 # Clean process list
+alias camon='lsof | grep -i "VDC\|AppleCamera"'    # Check camera usage
+alias ports-all='netstat -an | grep LISTEN'         # All listening ports
+alias rkhunt='sudo rkhunter --check'                # Run rootkit scan
+
+# Run all security checks at once
+checksec() {
+  echo "\n🔒 === SECURITY CHECK ==="
+  echo "\n📡 OPEN NETWORK CONNECTIONS"
+  sudo lsof -i
+  echo "\n📷 CAMERA USAGE"
+  lsof | grep -i "VDC\|AppleCamera"
+  echo "\n🔌 LISTENING PORTS"
+  netstat -an | grep LISTEN
+  echo "\n⚙️  RUNNING PROCESSES"
+  ps aux | grep -v grep
+  echo "\n🦠 ROOTKIT SCAN"
+  sudo rkhunter --check
+  echo "\n✅ Security check complete"
+}
