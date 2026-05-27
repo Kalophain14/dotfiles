@@ -185,7 +185,14 @@ alias http='http'                          # HTTPie - test HTTP endpoints
 alias pp='prettyping'                      # Prettier ping
 alias top='btop'                           # Better top/htop
 alias myip='echo "Local: $(ipconfig getifaddr en0) | Public: $(curl -s ifconfig.me)"' # Show both IPs
-alias weather='curl wttr.in'               # Quick weather in terminal
+alias pgcli='pgcli -U postgres'            # Better Postgres CLI with autocomplete
+alias ctop='ctop'                          # Container monitoring
+alias rg='rg'                              # Ripgrep - fast codebase search
+alias gping='gping'                        # Ping with live graph
+alias dog='doggo'                          # Better DNS lookup
+alias curl='curlie'                        # Friendlier curl
+alias dust='dust'                          # Disk usage visualizer
+alias sd='sd'                              # Smarter sed for refactoring
 
 # =============================================================
 # FUNCTIONS
@@ -365,7 +372,14 @@ help() {
   pp              prettier ping
   top             better top (btop)
   myip            show local + public IP in one shot
-  weather         quick weather in terminal
+  pgcli           better Postgres CLI with autocomplete
+  ctop            container monitoring
+  rg 'pattern'    ripgrep - fast codebase search
+  gping 'host'    ping with live graph
+  dog 'domain'    better DNS lookup
+  curl            friendlier curl (curlie)
+  dust            disk usage visualizer
+  sd 'old' 'new'  smarter sed for refactoring
   jsonpp 'json'   pretty print JSON
   stowit 'pkg'    stow a dotfile package
   unstowit 'pkg'  unstow a dotfile package
