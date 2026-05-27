@@ -189,7 +189,6 @@ alias pgcli='pgcli -U postgres'            # Better Postgres CLI with autocomple
 alias ctop='ctop'                          # Container monitoring
 alias rg='rg'                              # Ripgrep - fast codebase search
 alias gping='gping'                        # Ping with live graph
-alias dog='doggo'                          # Better DNS lookup
 alias curl='curlie'                        # Friendlier curl
 alias dust='dust'                          # Disk usage visualizer
 alias sd='sd'                              # Smarter sed for refactoring
