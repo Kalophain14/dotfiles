@@ -189,7 +189,6 @@ alias pgcli='pgcli -U postgres'            # Better Postgres CLI with autocomple
 alias ctop='ctop'                          # Container monitoring
 alias rg='rg'                              # Ripgrep - fast codebase search
 alias gping='gping'                        # Ping with live graph
-alias curl='curlie'                        # Friendlier curl
 alias dust='dust'                          # Disk usage visualizer
 alias sd='sd'                              # Smarter sed for refactoring
 
@@ -445,3 +444,8 @@ checksec() {
   sudo rkhunter --check
   echo "\n✅ Security check complete"
 }
+alias copy='pbcopy'
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
