@@ -38,12 +38,11 @@ export VISUAL='code'
 # =============================================================
 export PATH="$HOME/.local/bin:$PATH"
 
-# Java / Spring Boot
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/amazon-corretto-17.jdk/Contents/Home
-export PATH=$JAVA_HOME/bin:$PATH
-
 # PostgreSQL
 export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+
+# Java (openjdk via Homebrew, kept as dependency for gradle/jdtls/kafka/tomcat)
+export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
 
 # NVM
 export NVM_DIR="$HOME/.nvm"
@@ -63,6 +62,12 @@ eval $(thefuck --alias)
 # Delta (better git diff) - set in gitconfig, but ensure it's on PATH
 export PATH="/opt/homebrew/bin:$PATH"
 
+# Homebrew shell environment
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Pyenv
+eval "$(pyenv init -)"
+
 # Direnv
 _direnv_hook() {
   trap -- '' SIGINT
@@ -77,6 +82,9 @@ typeset -ag chpwd_functions
 if (( ! ${chpwd_functions[(I)_direnv_hook]} )); then
   chpwd_functions=(_direnv_hook $chpwd_functions)
 fi
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
 
 # =============================================================
 # ALIASES - GENERAL
@@ -94,6 +102,7 @@ alias o='open .'                     # Open folder in Finder
 alias localip='ipconfig getifaddr en0' # Show local IP
 alias publicip='curl -s ifconfig.me'   # Show public IP
 alias c='clear'                      # Clear terminal
+alias copy='pbcopy'                  # Copy stdin to clipboard
 
 # =============================================================
 # ALIASES - GIT
@@ -193,6 +202,21 @@ alias dust='dust'                          # Disk usage visualizer
 alias sd='sd'                              # Smarter sed for refactoring
 
 # =============================================================
+# ALIASES - SECURITY
+# =============================================================
+alias connections='sudo lsof -i'                    # All open network connections
+alias procs='ps aux | grep -v grep'                 # Clean process list
+alias camon='lsof | grep -i "VDC\|AppleCamera"'    # Check camera usage
+alias ports-all='netstat -an | grep LISTEN'         # All listening ports
+alias rkhunt='sudo rkhunter --check'                # Run rootkit scan
+
+# =============================================================
+# ALIASES - FNB APP ACADEMY
+# =============================================================
+alias fnba="cd ~/DevOps/Learning/FNB-App-Academy && source venv/bin/activate" # Activate FNB course venv
+alias fnbd="deactivate"                                                        # Deactivate FNB course venv
+
+# =============================================================
 # FUNCTIONS
 # =============================================================
 
@@ -243,6 +267,22 @@ jsonpp() { echo "$1" | jq . }
 # Stow a dotfile package
 stowit() { cd ~/dotfiles && stow "$1" && cd - }
 unstowit() { cd ~/dotfiles && stow -D "$1" && cd - }
+
+# Run all security checks at once
+checksec() {
+  echo "\n🔒 === SECURITY CHECK ==="
+  echo "\n📡 OPEN NETWORK CONNECTIONS"
+  sudo lsof -i
+  echo "\n📷 CAMERA USAGE"
+  lsof | grep -i "VDC\|AppleCamera"
+  echo "\n🔌 LISTENING PORTS"
+  netstat -an | grep LISTEN
+  echo "\n⚙️  RUNNING PROCESSES"
+  ps aux | grep -v grep
+  echo "\n🦠 ROOTKIT SCAN"
+  sudo rkhunter --check
+  echo "\n✅ Security check complete"
+}
 
 # =============================================================
 # HELP - Type 'help' to see all your shortcuts
@@ -365,6 +405,10 @@ help() {
   springup        docker up + mvn run
   springdown      docker compose down
 
+  🎓 FNB APP ACADEMY
+  fnba            activate FNB course venv
+  fnbd            deactivate FNB course venv
+
   🔒 SECURITY
   connections     all open network connections
   procs           clean running process list
@@ -382,8 +426,7 @@ help() {
   ctop            container monitoring
   rg 'pattern'    ripgrep - fast codebase search
   gping 'host'    ping with live graph
-  dog 'domain'    better DNS lookup
-  curl            friendlier curl (curlie)
+  dog 'domain'    better DNS lookup 
   dust            disk usage visualizer
   sd 'old' 'new'  smarter sed for refactoring
   jsonpp 'json'   pretty print JSON
@@ -416,36 +459,13 @@ bindkey '^[[1;5D' backward-word  # Ctrl+Left
 }
 
 # =============================================================
-# POWERLEVEL10K (keep at very bottom)
+# POWERLEVEL10K (keep near the bottom)
 # =============================================================
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # =============================================================
-# ALIASES - SECURITY
+# SDKMAN
+# THIS MUST BE AT THE VERY END OF THE FILE FOR SDKMAN TO WORK!!!
 # =============================================================
-alias connections='sudo lsof -i'                    # All open network connections
-alias procs='ps aux | grep -v grep'                 # Clean process list
-alias camon='lsof | grep -i "VDC\|AppleCamera"'    # Check camera usage
-alias ports-all='netstat -an | grep LISTEN'         # All listening ports
-alias rkhunt='sudo rkhunter --check'                # Run rootkit scan
-
-# Run all security checks at once
-checksec() {
-  echo "\n🔒 === SECURITY CHECK ==="
-  echo "\n📡 OPEN NETWORK CONNECTIONS"
-  sudo lsof -i
-  echo "\n📷 CAMERA USAGE"
-  lsof | grep -i "VDC\|AppleCamera"
-  echo "\n🔌 LISTENING PORTS"
-  netstat -an | grep LISTEN
-  echo "\n⚙️  RUNNING PROCESSES"
-  ps aux | grep -v grep
-  echo "\n🦠 ROOTKIT SCAN"
-  sudo rkhunter --check
-  echo "\n✅ Security check complete"
-}
-alias copy='pbcopy'
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
