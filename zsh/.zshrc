@@ -15,6 +15,10 @@ ZSH_DISABLE_COMPFIX=true
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting z fzf)
 source $ZSH/oh-my-zsh.sh
 
+# Unalias any oh-my-zsh aliases that shadow our functions
+unalias gbd 2>/dev/null || true  # oh-my-zsh defines gbd='git branch -d', we use gbrm()
+
+
 # =============================================================
 # HISTORY
 # =============================================================
@@ -57,7 +61,7 @@ export FZF_DEFAULT_OPTS='--height 40% --border'
 eval "$(zoxide init zsh)"
 
 # Thefuck (auto-correct mistyped commands)
-eval $(thefuck --alias)
+eval "$(thefuck --alias)"
 
 # Delta (better git diff) - set in gitconfig, but ensure it's on PATH
 export PATH="/opt/homebrew/bin:$PATH"
@@ -69,7 +73,7 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 eval "$(pyenv init -)"
 
 # Direnv
-_direnv_hook() {
+function _direnv_hook {
   trap -- '' SIGINT
   eval "$("/opt/homebrew/bin/direnv" export zsh)"
   trap - SIGINT
@@ -107,6 +111,8 @@ alias copy='pbcopy'                  # Copy stdin to clipboard
 # =============================================================
 # ALIASES - GIT
 # =============================================================
+
+# --- Daily Workflow ---
 alias g='git'                                        # Shorthand for git
 alias gs='git status'                                # Show changes
 alias ga='git add'                                   # Stage a file
@@ -117,25 +123,44 @@ alias gp='git push'                                  # Push to remote
 alias gpul='git pull'                                # Pull from remote
 alias gco='git checkout'                             # Switch branch
 alias gcb='git checkout -b'                          # Create new branch
+alias gpsup='git push --set-upstream origin $(git_current_branch)'
+
+# --- Branch Management ---
 alias gb='git branch'                                # List branches
-alias gbd='git branch --delete'                      # Delete branch
+alias gm='git merge'                                 # Merge branch
+alias gma='git merge --abort'                        # Abort merge
+alias gmc='git merge --continue'                     # Continue merge after conflicts
+alias gmn='git merge --no-ff'                       # Merge with explicit merge commit
+alias gms='git merge --squash'                     # Squash all commits into one
+
+# --- History & Debugging ---
 alias glog='git log --graph --pretty=format:"%C(yellow)%h%Creset -%C(cyan)%d%Creset %s %C(green)(%cr)%Creset %C(blue)<%ae>%Creset" --abbrev-commit --all'
-alias gd='git diff'                                  # Show differences
-alias gundo='git reset'                              # Undo last commit with hash
-alias gundos='git reset --soft HEAD~1'               # Undo last commit, keep changes staged
+alias gtree='git log --graph --oneline --decorate --all' # Visual commit tree
+alias gd='git diff'                                  # Show unstaged differences
+alias gds='git diff --staged'                        # Show staged differences
+alias gsh='git show'                                 # Show commit details
+alias glast='git diff HEAD~1 HEAD'                   # What changed in last commit
+alias gfiles='git diff --name-only main...HEAD'      # Files changed in current branch
+alias gunpushed='git log @{u}..HEAD --oneline'     # Commits not yet pushed
+
+# --- Undoing Things ---
+alias gundo='git reset'                              # Undo to specific hash
+alias gundos='git reset --soft HEAD~1'               # Undo last commit, keep staged
 alias gundoh='git reset --hard HEAD~1'               # Hard reset, discard all changes
 alias gundomh='git reset --mixed HEAD~1'             # Undo last commit, unstage changes
 alias gst='git stash'                                # Stash changes
 alias gsp='git stash pop'                            # Restore stashed changes
-alias gsc='git clean'                                # Remove untracked files
-alias gpsup='git push --set-upstream origin $(git_current_branch)'
-alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
-alias grb='git rebase -i'                            # Interactive rebase
-alias grbc='git rebase --continue'                   # Continue rebase after resolving conflicts
-alias grba='git rebase --abort'                      # Abort rebase
-alias gtree='git log --graph --oneline --decorate --all' # Visual commit tree
-alias ghb='git bisect'                               # Bisect to track down bugs
+alias gsc='git clean -n'                             # Preview what clean would remove (safe)
+alias grev='git revert'                              # Create undo commit (safe for shared)
 
+# --- Rebase ---
+alias grb='git rebase -i'                            # Interactive rebase
+alias grbc='git rebase --continue'                   # Continue rebase after conflicts
+alias grba='git rebase --abort'                      # Abort rebase
+
+# --- Bisect & Other ---
+alias ghb='git bisect'                               # Bisect to track down bugs
+alias ghopen='open "https://github.com/$(git remote get-url origin | sed "s/.*github.com[:/]//" | sed "s/.git$//")"'
 # =============================================================
 # ALIASES - MAVEN
 # =============================================================
@@ -154,7 +179,6 @@ alias dkex='docker exec -it'         # Enter container shell
 alias dkcu='docker compose up -d'    # Start containers
 alias dkcd='docker compose down'     # Stop containers
 alias dkcub='docker compose up --build' # Rebuild and start
-alias dkprune='docker system prune -af' # Remove unused data
 
 # =============================================================
 # ALIASES - POSTGRESQL
@@ -190,16 +214,12 @@ alias ld='lazydocker'                      # Open lazydocker TUI
 # =============================================================
 # ALIASES - NEW TOOLS
 # =============================================================
-alias http='http'                          # HTTPie - test HTTP endpoints
+# Note: http, rg, gping, dust, sd, ctop are used as plain commands below
+# (no alias needed, since the command name already matches the tool name)
 alias pp='prettyping'                      # Prettier ping
 alias top='btop'                           # Better top/htop
 alias myip='echo "Local: $(ipconfig getifaddr en0) | Public: $(curl -s ifconfig.me)"' # Show both IPs
 alias pgcli='pgcli -U postgres'            # Better Postgres CLI with autocomplete
-alias ctop='ctop'                          # Container monitoring
-alias rg='rg'                              # Ripgrep - fast codebase search
-alias gping='gping'                        # Ping with live graph
-alias dust='dust'                          # Disk usage visualizer
-alias sd='sd'                              # Smarter sed for refactoring
 
 # =============================================================
 # ALIASES - SECURITY
@@ -210,34 +230,35 @@ alias camon='lsof | grep -i "VDC\|AppleCamera"'    # Check camera usage
 alias ports-all='netstat -an | grep LISTEN'         # All listening ports
 alias rkhunt='sudo rkhunter --check'                # Run rootkit scan
 
-# =============================================================
-# ALIASES - FNB APP ACADEMY
-# =============================================================
-alias fnba="cd ~/DevOps/Learning/FNB-App-Academy && source venv/bin/activate" # Activate FNB course venv
-alias fnbd="deactivate"                                                        # Deactivate FNB course venv
+# Unalias oh-my-zsh git plugin aliases that conflict with our functions
+unalias gclean 2>/dev/null || true
+unalias gbrm 2>/dev/null || true
+unalias gsclean 2>/dev/null || true
+unalias gundohc 2>/dev/null || true
+unalias dkprune 2>/dev/null || true
 
 # =============================================================
 # FUNCTIONS
 # =============================================================
 
 # Make dir and cd into it
-mkcd() { mkdir -p "$1" && cd "$1" }
+function mkcd { mkdir -p "$1" && cd "$1" }
 
 # Quick add + commit + push
-gacp() { git add . && git commit -m "$1" && git push }
+function gacp { git add . && git commit -m "$1" && git push }
 
 # Kill process on port
-killport() { lsof -ti tcp:$1 | xargs kill }
+function killport { lsof -ti tcp:$1 | xargs kill }
 
 # Check common dev ports
-ports() {
+function ports {
   echo "=== 8080 (Spring) ===" && lsof -ti tcp:8080 | xargs ps -p 2>/dev/null || echo "free"
   echo "=== 5432 (Postgres) ===" && lsof -ti tcp:5432 | xargs ps -p 2>/dev/null || echo "free"
   echo "=== 6379 (Redis) ===" && lsof -ti tcp:6379 | xargs ps -p 2>/dev/null || echo "free"
 }
 
 # Create new Spring Boot project
-springnew() {
+function springnew {
   mkcd "$1"
   echo "# $1" > README.md
   printf "target/\n.env\n*.log\n" > .gitignore
@@ -246,7 +267,7 @@ springnew() {
 }
 
 # Create .env for Spring Boot
-envnew() {
+function envnew {
   cat > .env << ENVEOF
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/dbname
 SPRING_DATASOURCE_USERNAME=postgres
@@ -258,182 +279,328 @@ ENVEOF
 }
 
 # Spring + Docker together
-springup() { docker compose up -d && mvn spring-boot:run }
-springdown() { docker compose down }
+function springup { docker compose up -d && mvn spring-boot:run }
+function springdown { docker compose down }
 
 # Pretty print JSON
-jsonpp() { echo "$1" | jq . }
+function jsonpp { echo "$1" | jq . }
 
-# Stow a dotfile package
-stowit() { cd ~/dotfiles && stow "$1" && cd - }
-unstowit() { cd ~/dotfiles && stow -D "$1" && cd - }
+# Stow / unstow a dotfile package
+function stowit { cd ~/dotfiles && stow "$1" && cd - }
+function unstowit { cd ~/dotfiles && stow -D "$1" && cd - }
 
 # Run all security checks at once
-checksec() {
-  echo "\n🔒 === SECURITY CHECK ==="
-  echo "\n📡 OPEN NETWORK CONNECTIONS"
+function checksec {
+  echo ""
+  echo "=== SECURITY CHECK ==="
+  echo ""
+  echo "=== OPEN NETWORK CONNECTIONS ==="
   sudo lsof -i
-  echo "\n📷 CAMERA USAGE"
+  echo ""
+  echo "=== CAMERA USAGE ==="
   lsof | grep -i "VDC\|AppleCamera"
-  echo "\n🔌 LISTENING PORTS"
+  echo ""
+  echo "=== LISTENING PORTS ==="
   netstat -an | grep LISTEN
-  echo "\n⚙️  RUNNING PROCESSES"
+  echo ""
+  echo "=== RUNNING PROCESSES ==="
   ps aux | grep -v grep
-  echo "\n🦠 ROOTKIT SCAN"
+  echo ""
+  echo "=== ROOTKIT SCAN ==="
   sudo rkhunter --check
-  echo "\n✅ Security check complete"
+  echo ""
+  echo "Security check complete"
+}
+
+# Delete branch with protection (local + remote)
+function gbrm {
+    protected="main master develop"
+    for b in $protected; do
+        if [[ "$1" == "$b" ]]; then
+            echo "Protected branch '$1' -- use git directly if you really mean it."
+            return 1
+        fi
+    done
+
+    echo "Local branch: $1"
+    git branch -vv | grep "$1" || true
+    echo ""
+    echo -n "Delete '$1' locally and on origin? [y/N] "
+        read confirm
+    if [[ $confirm == [yY] ]]; then
+        git branch -d "$1" && git push origin --delete "$1"
+        echo "Deleted."
+    else
+        echo "Cancelled."
+    fi
+}
+
+# Docker prune with confirmation (removes ALL unused images, not just dangling)
+function dkprune {
+    echo -n "This removes ALL unused Docker images, containers, networks, and build cache. Continue? [y/N] "
+        read confirm
+    if [[ $confirm == [yY] ]]; then
+        docker system prune -af
+        echo "Pruned."
+    else
+        echo "Cancelled."
+    fi
+}
+
+# Git clean with confirmation (removes untracked files permanently)
+function gsclean {
+    echo -n "Remove all untracked files? This cannot be undone. [y/N] "
+        read confirm
+    if [[ $confirm == [yY] ]]; then
+        git clean -fd
+        echo "Cleaned."
+    else
+        echo "Cancelled."
+    fi
+}
+
+# Hard reset with confirmation
+function gundohc {
+    echo -n "Hard reset to HEAD~1? ALL uncommitted changes will be LOST. [y/N] "
+        read confirm
+    if [[ $confirm == [yY] ]]; then
+        git reset --hard HEAD~1
+        echo "Reset."
+    else
+        echo "Cancelled."
+    fi
+}
+
+# Dog DNS lookup (defined since it's referenced in help)
+function dog { dig +short "$1" }
+
+# Delete all merged branches except main/master/develop
+function gclean {
+    echo "Merged branches that will be deleted:"
+    git branch --merged | grep -vE "^\*|main|master|develop"
+    echo ""
+    echo -n "Delete these branches? [y/N] "
+    read confirm
+    if [[ "$confirm" == [yY] ]]; then
+        git branch --merged | grep -vE "^\*|main|master|develop" | xargs -r git branch -d
+        echo "Cleaned."
+    else
+        echo "Cancelled."
+    fi
+}
+
+# =============================================================
+# ENVIRONMENTS - Activate/Deactivate virtual environments
+# =============================================================
+function enva {
+    local candidates=(".venv" "venv" "env" ".env")
+    local dir
+
+    for dir in "${candidates[@]}"; do
+        if [ -f "$dir/bin/activate" ]; then
+            source "$dir/bin/activate"
+            echo "Activated: $(pwd)/$dir"
+            return 0
+        fi
+    done
+
+    echo "No virtual environment found here (looked for: ${candidates[*]})."
+    echo "Create one with: python3 -m venv .venv"
+    return 1
+}
+
+function envd {
+    if [ -n "$VIRTUAL_ENV" ]; then
+        deactivate
+        echo "Deactivated."
+    else
+        echo "No virtual environment is currently active."
+    fi
 }
 
 # =============================================================
 # HELP - Type 'help' to see all your shortcuts
 # =============================================================
-help() {
-  echo "
-  ╔══════════════════════════════════════╗
-  ║       YOUR TERMINAL CHEATSHEET       ║
-  ╚══════════════════════════════════════╝
+function help {
+  cat << 'CHEATSHEET'
 
-  📁 NAVIGATION
-  ll              list files with details
-  ls              list files with icons
-  lt              list files as tree
-  ..              go up one folder
-  ...             go up two folders
-  o               open folder in Finder
-  c               clear terminal
-  mkcd 'name'     make dir and cd into it
+╔══════════════════════════════════════════════════════════════════╗
+║                    TERMINAL CHEATSHEET                           ║
+╚══════════════════════════════════════════════════════════════════╝
 
-  ⚙️  CONFIG
-  reload          reload terminal config
-  zshrc           edit terminal config
-  dotfiles        open dotfiles in VS Code
+┌─ NAVIGATION ─────────────────────────────────────────────────────┐
+│  ll              List files with details (eza -al)               │
+│  ls              List files with icons (eza)                     │
+│  lt              List files as tree (eza --tree)                 │
+│  ..              Go up one folder                                │
+│  ...             Go up two folders                               │
+│  o               Open folder in Finder                           │
+│  c               Clear terminal                                  │
+│  mkcd <name>     Make directory and cd into it                   │
+└──────────────────────────────────────────────────────────────────┘
 
-  🌐 NETWORK
-  localip         show your local IP
-  publicip        show your public IP
-  killport 8080   kill process on port
-  ports           check dev ports status
+┌─ CONFIG ─────────────────────────────────────────────────────────┐
+│  reload          Reload terminal config                          │
+│  zshrc           Edit terminal config in VS Code                 │
+│  dotfiles        Open dotfiles folder in VS Code                 │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐙 GIT — STATUS & STAGING
-  g               git (shorthand)
-  gs              git status
-  ga 'file'       stage a file
-  gaa             stage all files
-  gd              show diff
-  glog            pretty graph log
-  gtree           visual commit tree (all branches)
+┌─ NETWORK ────────────────────────────────────────────────────────┐
+│  localip         Show your local IP                              │
+│  publicip        Show your public IP                             │
+│  killport <port> Kill process on port                            │
+│  ports           Check dev ports status (8080, 5432, 6379)       │
+│  myip            Show local + public IP in one shot              │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐙 GIT — COMMITS
-  gcm 'msg'       commit with message
-  gacm 'msg'      add all + commit
-  gacp 'msg'      add all + commit + push
-  gundo           undo last commit (with hash)
-  gundos          undo commit, keep changes staged
-  gundoh          hard reset, discard all changes
-  gundomh         undo commit, unstage changes
+┌─ GIT ─ DAILY WORKFLOW ───────────────────────────────────────────┐
+│  g               git shorthand                                   │
+│  gs              git status                                        │
+│  ga <file>       Stage a file                                    │
+│  gaa             Stage all files                                 │
+│  gcm "msg"       Commit with message                             │
+│  gacm "msg"      Add all + commit                                │
+│  gacp "msg"      Add all + commit + push                         │
+│  gp              Push to remote                                  │
+│  gpul            Pull from remote                                │
+│  gco <branch>    Checkout branch                                 │
+│  gcb <name>      Create and checkout new branch                  │
+│  gpsup           Push and set upstream origin                    │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐙 GIT — PUSH & PULL
-  gp              push to remote
-  gpul            pull from remote
-  gpsup           push and set upstream origin
+┌─ GIT ─ BRANCH MANAGEMENT ────────────────────────────────────────┐
+│  gb              List branches                                   │
+│  gbrm <name>     Delete branch (protected + confirm)             │
+│  gclean          Delete all merged branches (confirm)            │
+│  gm <branch>     Merge branch                                    │
+│  gma             Abort merge                                     │
+│  gmc             Continue merge after resolving conflicts          │
+│  gmn <branch>    Merge with explicit merge commit                │
+│  gms <branch>    Squash merge into single commit                 │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐙 GIT — BRANCHES
-  gco             checkout branch
-  gcb 'name'      create new branch
-  gb              list branches
-  gbd 'name'      delete branch
+┌─ GIT ─ HISTORY & DEBUGGING ──────────────────────────────────────┐
+│  glog            Pretty graph log                                │
+│  gtree           Visual commit tree (all branches)               │
+│  gd              Show unstaged diff                              │
+│  gds             Show staged diff                                │
+│  gsh             Show commit details                             │
+│  glast           What changed in last commit                     │
+│  gfiles          Files changed in current branch vs main         │
+│  gunpushed       Commits not yet pushed                          │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐙 GIT — STASH
-  gst             stash changes
-  gsp             restore stashed changes
-  gsc             clean untracked files
+┌─ GIT ─ UNDOING THINGS ───────────────────────────────────────────┐
+│  gundo <hash>    Undo to specific commit hash                    │
+│  gundos          Undo last commit, keep changes staged           │
+│  gundoh          Hard reset, discard ALL changes                 │
+│  gundohc         Hard reset with confirmation                    │
+│  gundomh         Undo last commit, unstage changes             │
+│  grev            Create undo commit (safe for shared branches)   │
+│  gst             Stash changes                                   │
+│  gsp             Restore stashed changes                         │
+│  gsc             Preview what clean would remove (safe)          │
+│  gsclean         Remove untracked files (with confirmation)      │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐙 GIT — REBASE
-  grb             interactive rebase
-  grbc            continue rebase after conflicts
-  grba            abort rebase
-  ghopen          open repo on GitHub
+┌─ GIT ─ REBASE ───────────────────────────────────────────────────┐
+│  grb             Interactive rebase                              │
+│  grbc            Continue rebase after resolving conflicts       │
+│  grba            Abort rebase                                    │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐛 GIT — BISECT (bug tracking)
-  ghb start       start bisect session
-  ghb bad         mark current commit as bad
-  ghb good <sha>  mark a known-good commit
-  ghb reset       end bisect session
+┌─ GIT ─ BISECT ───────────────────────────────────────────────────┐
+│  ghb start       Start bisect session                            │
+│  ghb bad         Mark current commit as bad                      │
+│  ghb good <sha>  Mark a known-good commit                        │
+│  ghb reset       End bisect session                              │
+│  ghopen          Open repo on GitHub in browser                  │
+└──────────────────────────────────────────────────────────────────┘
 
-  ☕ MAVEN
-  mvnr            run Spring Boot app
-  mvni            clean install
-  mvnc            clean build
-  mvnt            run tests
-  mvnci           install, skip tests
+┌─ MAVEN ──────────────────────────────────────────────────────────┐
+│  mvnr            Run Spring Boot app                             │
+│  mvni            Clean install                                   │
+│  mvnc            Clean build                                     │
+│  mvnt            Run tests                                       │
+│  mvnci           Install, skip tests                             │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐳 DOCKER — CONTAINERS
-  dkps            list running containers
-  dklog 'name'    follow container logs
-  dkex 'name'     enter container shell
-  dkprune         remove all unused data
+┌─ DOCKER ─ CONTAINERS ────────────────────────────────────────────┐
+│  dkps            List running containers                           │
+│  dklog <name>    Follow container logs                           │
+│  dkex <name>     Enter container shell                           │
+│  dkprune         Remove all unused Docker data (confirm)           │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐳 DOCKER — COMPOSE
-  dkcu            start containers (detached)
-  dkcd            stop containers
-  dkcub           rebuild and start
+┌─ DOCKER ─ COMPOSE ───────────────────────────────────────────────┐
+│  dkcu            Start containers (detached)                       │
+│  dkcd            Stop containers                                   │
+│  dkcub           Rebuild and start                                 │
+└──────────────────────────────────────────────────────────────────┘
 
-  🐘 POSTGRESQL
-  pgstart         start postgres
-  pgstop          stop postgres
-  pgconn          connect as postgres user
+┌─ POSTGRESQL ─────────────────────────────────────────────────────┐
+│  pgstart         Start PostgreSQL                                  │
+│  pgstop          Stop PostgreSQL                                   │
+│  pgconn          Connect as postgres user                          │
+└──────────────────────────────────────────────────────────────────┘
 
-  🔴 REDIS
-  redstart        start redis
-  redstop         stop redis
-  redcli          open redis CLI
+┌─ REDIS ──────────────────────────────────────────────────────────┐
+│  redstart        Start Redis                                       │
+│  redstop         Stop Redis                                        │
+│  redcli          Open Redis CLI                                    │
+└──────────────────────────────────────────────────────────────────┘
 
-  👻 GHOSTTY
-  ghostty-config  edit ghostty config
-  ghostty-reload  reload ghostty
+┌─ GHOSTTY ────────────────────────────────────────────────────────┐
+│  ghostty-config  Edit Ghostty config                               │
+│  ghostty-reload  Reload Ghostty                                    │
+└──────────────────────────────────────────────────────────────────┘
 
-  🪶 HELIX
-  hx              open helix editor
+┌─ EDITORS / TUI ──────────────────────────────────────────────────┐
+│  hx              Open Helix editor                                 │
+│  lg              Open lazygit TUI                                  │
+│  ld              Open lazydocker TUI                               │
+└──────────────────────────────────────────────────────────────────┘
 
-  🔀 LAZYGIT & LAZYDOCKER
-  lg              open lazygit TUI
-  ld              open lazydocker TUI
+┌─ SPRING / PROJECT ───────────────────────────────────────────────┐
+│  springnew <n>   Scaffold Spring Boot project                      │
+│  envnew          Create .env template                                │
+│  springup        Docker up + mvn run                                 │
+│  springdown      Docker compose down                                 │
+└──────────────────────────────────────────────────────────────────┘
 
-  🌱 SPRING / PROJECT
-  springnew 'n'   scaffold Spring Boot project
-  envnew          create .env template
-  springup        docker up + mvn run
-  springdown      docker compose down
+┌─ PYTHON ENVIRONMENTS ────────────────────────────────────────────┐
+│  enva            Activate virtual environment                      │
+│  envd            Deactivate virtual environment                      │
+└──────────────────────────────────────────────────────────────────┘
 
-  🎓 FNB APP ACADEMY
-  fnba            activate FNB course venv
-  fnbd            deactivate FNB course venv
+┌─ SECURITY ───────────────────────────────────────────────────────┐
+│  connections     All open network connections                        │
+│  procs           Clean running process list                        │
+│  camon           Check what is using your camera                     │
+│  ports-all       All listening ports                                 │
+│  rkhunt          Run rootkit scan                                    │
+│  checksec        Run ALL security checks at once                   │
+└──────────────────────────────────────────────────────────────────┘
 
-  🔒 SECURITY
-  connections     all open network connections
-  procs           clean running process list
-  camon           check what is using your camera
-  ports-all       all listening ports
-  rkhunt          run rootkit scan
-  checksec        run ALL security checks at once
+┌─ UTILITIES ──────────────────────────────────────────────────────┐
+│  http            HTTPie - test HTTP endpoints                        │
+│  pp              Prettier ping                                       │
+│  top             Better top (btop)                                   │
+│  pgcli           Better Postgres CLI with autocomplete               │
+│  ctop            Container monitoring                                │
+│  rg <pattern>    Ripgrep - fast codebase search                      │
+│  gping <host>    Ping with live graph                                │
+│  dog <domain>    DNS lookup                                          │
+│  dust            Disk usage visualizer                               │
+│  sd <old> <new>  Smarter sed for refactoring                         │
+│  jsonpp <json>   Pretty print JSON                                   │
+│  stowit <pkg>    Stow a dotfile package                              │
+│  unstowit <pkg>  Unstow a dotfile package                            │
+└──────────────────────────────────────────────────────────────────┘
 
-  🛠️  UTILITIES
-  http            HTTPie - test HTTP endpoints
-  pp              prettier ping
-  top             better top (btop)
-  myip            show local + public IP in one shot
-  pgcli           better Postgres CLI with autocomplete
-  ctop            container monitoring
-  rg 'pattern'    ripgrep - fast codebase search
-  gping 'host'    ping with live graph
-  dog 'domain'    better DNS lookup 
-  dust            disk usage visualizer
-  sd 'old' 'new'  smarter sed for refactoring
-  jsonpp 'json'   pretty print JSON
-  stowit 'pkg'    stow a dotfile package
-  unstowit 'pkg'  unstow a dotfile package
-  "
+CHEATSHEET
 }
+
 
 # =============================================================
 # KEYBINDINGS
@@ -451,9 +618,9 @@ bindkey '^[[1;5D' backward-word  # Ctrl+Left
   precmd() {
     if (( ! _welcome_shown )); then
       _welcome_shown=1
-      print "👋 Welcome back, $(whoami)!"
-      print "📅 $(date '+%A, %d %B %Y')"
-      print "💡 Type 'help' to see all your shortcuts"
+      print "Welcome back, $(whoami)!"
+      print "$(date '+%A, %d %B %Y')"
+      print "Type 'help' to see all your shortcuts"
     fi
   }
 }
