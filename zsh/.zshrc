@@ -40,6 +40,9 @@ export VISUAL='code'
 # =============================================================
 # PATH & TOOLS
 # =============================================================
+# Homebrew shell environment (must come first — other tool paths below assume it)
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 export PATH="$HOME/.local/bin:$PATH"
 
 # PostgreSQL
@@ -57,17 +60,16 @@ export NVM_DIR="$HOME/.nvm"
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_DEFAULT_OPTS='--height 40% --border'
 
+# =============================================================
+# AWS CLI SHORTCUTS
+# =============================================================
+[ -f ~/dotfiles/zsh/aws-cli-shortcuts.sh ] && source ~/dotfiles/zsh/aws-cli-shortcuts.sh
+
 # Zoxide (replaces cd)
 eval "$(zoxide init zsh)"
 
 # Thefuck (auto-correct mistyped commands)
 eval "$(thefuck --alias)"
-
-# Delta (better git diff) - set in gitconfig, but ensure it's on PATH
-export PATH="/opt/homebrew/bin:$PATH"
-
-# Homebrew shell environment
-eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Pyenv
 eval "$(pyenv init -)"
@@ -580,6 +582,23 @@ function help {
 │  ports-all       All listening ports                                 │
 │  rkhunt          Run rootkit scan                                    │
 │  checksec        Run ALL security checks at once                   │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ AWS ─ DAY-TO-DAY (awshelp for full list) ───────────────────────┐
+│  awswho          Who am I / current identity                        │
+│  awsp <profile>  Switch AWS profile for this session                │
+│  ec2ls           List instances (id/state/type/name)                │
+│  ec2ssh <id>     Shell into instance via SSM                        │
+│  ec2ip <id>      Get instance public IP                             │
+│  s3l             List all buckets                                   │
+│  s3lsr <bucket>  List files in bucket (recursive)                   │
+│  s3sync <a> <b>  Sync local dir <-> bucket                          │
+│  logstail <grp>  Live-tail a CloudWatch log group                   │
+│  logserr <grp>   Filter log group for errors                        │
+│  lfninv <fn>     Invoke a Lambda function                           │
+│  ddbscan <tbl>   Dump all items in a DynamoDB table                 │
+│  ssmget <name>   Decrypt an SSM parameter                           │
+│  awscost         Month-to-date cost by service                      │
 └──────────────────────────────────────────────────────────────────┘
 
 ┌─ UTILITIES ──────────────────────────────────────────────────────┐
