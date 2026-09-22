@@ -654,4 +654,7 @@ bindkey '^[[1;5D' backward-word  # Ctrl+Left
 # THIS MUST BE AT THE VERY END OF THE FILE FOR SDKMAN TO WORK!!!
 # =============================================================
 export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"export EC2_ID=i-i-02d0e80968c9dec08
+
+export EC2_ID=i-0abc123def456
+export EC2_ID=i-02d0e80968c9dec08
