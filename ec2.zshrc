@@ -1,4 +1,11 @@
 # =============================================================
+# TERMINAL OVERRIDE (must be first — fixes Ghostty's xterm-ghostty
+# TERM value, which EC2's terminfo doesn't recognize and causes
+# backspace/key issues)
+# =============================================================
+export TERM=xterm-256color
+
+# =============================================================
 # POWERLEVEL10K INSTANT PROMPT (keep at very top)
 # =============================================================
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -34,11 +41,6 @@ export EDITOR='nano'
 export VISUAL='nano'
 
 # =============================================================
-# TERMINAL / COLOR FIX (this is what fixes `clear` + color output)
-# =============================================================
-export TERM=xterm-256color
-
-# =============================================================
 # PATH & TOOLS (Linux-native, no Homebrew)
 # =============================================================
 export PATH="$HOME/.local/bin:$PATH"
@@ -61,10 +63,7 @@ alias ls='ls --color=auto'
 alias lt='ls -R'
 alias ..='cd ..'
 alias ...='cd ../..'
-alias localip="hostname -I | awk '{print \$1}'"
-alias publicip='curl -s ifconfig.me'
 alias c='clear'
-alias myip='echo "Local: $(hostname -I | awk "{print \$1}") | Public: $(curl -s ifconfig.me)"'
 
 # =============================================================
 # ALIASES - GIT
@@ -148,6 +147,73 @@ alias procs='ps aux | grep -v grep'
 alias ports-all='netstat -an | grep LISTEN'
 
 # =============================================================
+# ALIASES - SYSTEM MONITORING (Linux-specific)
+# =============================================================
+alias meminfo='free -h'                          # Memory usage, human-readable
+alias diskinfo='df -h'                            # Disk usage per mount
+alias dfi='df -hi'                                 # Inode usage (disk can be "full" on inodes too)
+alias diskusage='du -sh * | sort -rh'              # Biggest files/folders in current dir
+alias cpuinfo='lscpu'                              # CPU details
+alias osinfo='cat /etc/os-release'                 # OS/distro version
+alias uptime-pretty='uptime -p'                    # "up 2 hours, 15 minutes"
+alias topcpu='ps aux --sort=-%cpu | head -15'      # Top 15 CPU-hungry processes
+alias topmem='ps aux --sort=-%mem | head -15'      # Top 15 memory-hungry processes
+alias watch-cpu='watch -n 1 "ps aux --sort=-%cpu | head -15"'  # Live CPU monitor
+
+# =============================================================
+# ALIASES - SYSTEMD / SERVICES
+# =============================================================
+alias sc='sudo systemctl'                          # sc start nginx, sc status nginx
+alias scs='sudo systemctl status'
+alias scr='sudo systemctl restart'
+alias sce='sudo systemctl enable'
+alias scd='sudo systemctl disable'
+alias jctl='sudo journalctl -xe'                    # Recent system logs w/ errors
+alias jctlf='sudo journalctl -f'                    # Follow logs live
+alias jctlu='sudo journalctl -u'                    # journalctl -u <service>
+
+# =============================================================
+# ALIASES - PACKAGE MANAGEMENT (Amazon Linux / RHEL-based)
+# =============================================================
+alias update='sudo yum update -y'
+alias install='sudo yum install -y'
+alias search='yum search'
+alias remove='sudo yum remove -y'
+alias listpkgs='yum list installed'
+
+# =============================================================
+# ALIASES - NETWORK (merged: local/public IP, connectivity, ports)
+# =============================================================
+alias localip="hostname -I | awk '{print \$1}'"
+alias publicip='curl -s ifconfig.me'
+alias myip='echo "Local: $(hostname -I | awk "{print \$1}") | Public: $(curl -s ifconfig.me)"'
+alias pingg='ping -c 4 8.8.8.8'                    # Quick connectivity check
+alias openports='sudo ss -tulnp'                   # Listening ports + process
+alias whoisme='curl -s ipinfo.io'                  # IP, region, ISP info
+alias sshconf='cat ~/.ssh/config'                  # Quick check what Host aliases exist
+
+# =============================================================
+# ALIASES - FILE OPS
+# =============================================================
+alias biggest='du -ah . | sort -rh | head -20'     # 20 biggest files/dirs here
+alias countfiles='find . -type f | wc -l'          # Count files in current dir
+alias emptytrash='rm -rf ~/.local/share/Trash/*'   # Clear trash (if applicable)
+alias extract='tar -xvzf'                           # Quick tar extraction
+
+# =============================================================
+# ALIASES - MISC / SHELL
+# =============================================================
+alias envshow='env | sort'                          # See all environment variables
+alias pathshow='echo $PATH | tr ":" "\n"'           # PATH, one entry per line
+alias hist='history | tail -30'                     # Last 30 commands
+alias whereami='pwd && hostname'                    # Quick orientation check
+
+# =============================================================
+# ALIASES - DOCKER CLEANUP
+# =============================================================
+alias dkclean='docker container prune -f && docker image prune -f'
+
+# =============================================================
 # FUNCTIONS
 # =============================================================
 function mkcd { mkdir -p "$1" && cd "$1" }
@@ -203,8 +269,13 @@ function help {
 │  dkex <name>     Shell into        dkprune Remove unused (confirm)│
 └──────────────────────────────────────────────────────────────────┘
 
-┌─ NETWORK / SECURITY ─────────────────────────────────────────────┐
-│  localip / publicip / myip     Show IPs                          │
+┌─ NETWORK ─────────────────────────────────────────────────────────┐
+│  localip / publicip / myip     Show IPs         pingg  Ping 8.8.8.8│
+│  openports    Listening ports  whoisme  IP/region/ISP info         │
+│  sshconf      Show ~/.ssh/config Host aliases                      │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ SECURITY / PORTS ────────────────────────────────────────────────┐
 │  killport <port>               Kill process on port              │
 │  ports                         Check 8080/5432/6379 status       │
 │  connections / ports-all       Network diagnostics               │
@@ -213,6 +284,41 @@ function help {
 ┌─ MISC ───────────────────────────────────────────────────────────┐
 │  reload          Reload zshrc     zshrc   Edit zshrc              │
 │  envnew          Create .env      jsonpp  Pretty print JSON       │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ SHELL INFO ──────────────────────────────────────────────────────┐
+│  envshow         Show env vars     pathshow   PATH, one per line  │
+│  hist            Last 30 commands  whereami   pwd + hostname      │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ SYSTEM MONITORING ──────────────────────────────────────────────┐
+│  meminfo         Memory usage       diskinfo   Disk usage         │
+│  dfi             Inode usage        diskusage  Biggest in dir     │
+│  cpuinfo         CPU details        osinfo     OS/distro info     │
+│  uptime-pretty   Uptime             topcpu/topmem Top processes   │
+│  watch-cpu       Live CPU monitor                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ SYSTEMD / SERVICES ─────────────────────────────────────────────┐
+│  sc <svc>        systemctl          scs <svc>  Status             │
+│  scr <svc>       Restart            sce/scd    Enable/disable     │
+│  jctl            Recent errors      jctlf      Follow logs live   │
+│  jctlu <svc>     Logs for a unit                                   │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ PACKAGES (yum) ─────────────────────────────────────────────────┐
+│  update          yum update         install <pkg>  yum install    │
+│  search <term>   yum search         remove <pkg>   yum remove     │
+│  listpkgs        List installed                                    │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ DOCKER CLEANUP ──────────────────────────────────────────────────┐
+│  dkclean         Remove unused containers + images                 │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ FILE OPS ────────────────────────────────────────────────────────┐
+│  biggest         20 biggest files   countfiles Count files here   │
+│  extract <file>  Extract tar.gz                                    │
 └──────────────────────────────────────────────────────────────────┘
 
 CHEATSHEET
