@@ -5,8 +5,8 @@ font-thicken = false
 
 # THEME & COLORS
 theme = catppuccin-mocha
-background-opacity = 0.75
-background-blur-radius = 10
+background-opacity = 0.88
+background-blur-radius = 14
 
 # WINDOW
 window-padding-x = 12
