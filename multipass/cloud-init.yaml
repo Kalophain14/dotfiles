@@ -1,0 +1,36 @@
+#cloud-config
+# Bash-only Multipass dev VM. No zsh, no oh-my-zsh, no p10k.
+# Aliases/functions live in dev.bashrc and are pushed by dev-launch / dev-reprovision.
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - bash-completion
+  - build-essential
+  - curl
+  - fzf
+  - git
+  - htop
+  - jq
+  - lsof
+  - ncat
+  - ncdu
+  - net-tools
+  - nano
+  - ripgrep
+  - shellcheck
+  - tmux
+  - tree
+  - unzip
+  - openjdk-21-jdk-headless
+  - postgresql-client
+  - docker.io
+
+runcmd:
+  # Docker without sudo (takes effect on next login)
+  - usermod -aG docker ubuntu
+  # Load our aliases from ~/.bashrc (file itself is pushed by dev-launch)
+  - grep -q 'dev_bashrc' /home/ubuntu/.bashrc || echo '[ -f ~/.dev_bashrc ] && . ~/.dev_bashrc' >> /home/ubuntu/.bashrc
+  - touch /home/ubuntu/.provisioned
+  - chown ubuntu:ubuntu /home/ubuntu/.provisioned /home/ubuntu/.bashrc
