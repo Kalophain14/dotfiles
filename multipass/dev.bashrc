@@ -1,100 +1,92 @@
 # =============================================================
-# ~/.dev_bashrc — sourced from ~/.bashrc (pure bash, no frameworks)
-# Only runs for interactive shells
+# ~/.dev_bashrc — sourced from ~/.bashrc. Pure bash, native commands.
 # =============================================================
 case $- in
   *i*) ;;
   *) return ;;
 esac
 
-# =============================================================
-# SHELL OPTIONS  (zsh setopt -> bash shopt)
-# =============================================================
-shopt -s checkwinsize   # update LINES/COLUMNS after each command
+# ---------- SHELL OPTIONS ----------
+shopt -s autocd         # type a dir name (or ..) to cd into it
 shopt -s cdspell        # fix minor typos in cd
-shopt -s autocd         # type a dir name to cd into it
+shopt -s dirspell       # fix typos in dir names during tab completion
 shopt -s globstar       # ** matches recursively
 shopt -s nocaseglob     # case-insensitive globbing
+shopt -s checkwinsize   # refresh LINES/COLUMNS after each command
+shopt -s cmdhist        # multi-line commands stay one history entry
 
-# =============================================================
-# HISTORY
-# zsh                      -> bash
-# HISTSIZE/SAVEHIST        -> HISTSIZE/HISTFILESIZE
-# HIST_IGNORE_DUPS/SPACE   -> HISTCONTROL=ignoreboth:erasedups
-# SHARE_HISTORY            -> histappend + PROMPT_COMMAND 'history -a; history -n'
-# HIST_VERIFY              -> shopt histverify
-# EXTENDED_HISTORY         -> HISTTIMEFORMAT
-# =============================================================
+# ---------- HISTORY ----------
 HISTSIZE=50000
 HISTFILESIZE=50000
-HISTFILE=~/.bash_history
-HISTCONTROL=ignoreboth:erasedups
+HISTCONTROL=ignoreboth:erasedups   # skip dups and space-prefixed commands
+HISTIGNORE='ls:cd:pwd:exit:clear:history'
 HISTTIMEFORMAT='%F %T  '
-shopt -s histappend
-shopt -s histverify
-PROMPT_COMMAND='history -a; history -n'
+shopt -s histappend     # append, don't overwrite, on exit
+shopt -s histverify     # !! and !$ expand for review before running
 
-# =============================================================
-# EDITOR / PATH
-# =============================================================
-export EDITOR='nano'
-export VISUAL='nano'
-export TERM=xterm-256color
+# ---------- ENV ----------
+export EDITOR=nano VISUAL=nano
 export PATH="$HOME/.local/bin:$PATH"
+# Terminals like Ghostty send TERM=xterm-ghostty, unknown to the VM -> clear/nano/less/htop break.
+# Fall back to a universal type when the VM has no terminfo entry for it.
+infocmp "$TERM" >/dev/null 2>&1 || export TERM=xterm-256color
+export LESS='-R'
+# colored man pages
+export LESS_TERMCAP_mb=$'\e[1;31m' LESS_TERMCAP_md=$'\e[1;36m' \
+       LESS_TERMCAP_me=$'\e[0m'    LESS_TERMCAP_se=$'\e[0m' \
+       LESS_TERMCAP_so=$'\e[1;33;44m' LESS_TERMCAP_ue=$'\e[0m' \
+       LESS_TERMCAP_us=$'\e[1;32m'
 
-# =============================================================
-# COMPLETION
-# =============================================================
-if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  fi
+# ---------- COMPLETION ----------
+if ! shopt -oq posix && [ -f /usr/share/bash-completion/bash_completion ]; then
+  . /usr/share/bash-completion/bash_completion
 fi
 bind "set completion-ignore-case on"
 bind "set show-all-if-ambiguous on"
+bind "set colored-stats on"
+bind "set colored-completion-prefix on"
+bind "set mark-symlinked-directories on"
 
-# =============================================================
-# KEYBINDINGS  (replaces history-substring-search)
-# Type the start of a command, then Up/Down to cycle matches
-# =============================================================
+# ---------- KEYS ----------
+# Type a prefix, then Up/Down cycles matching history
 bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
-
-# fzf: Ctrl-R fuzzy history, Ctrl-T fuzzy file picker (replaces z / autosuggestions)
+# fzf: Ctrl-R fuzzy history, Ctrl-T fuzzy file picker
 [ -f /usr/share/doc/fzf/examples/key-bindings.bash ] && . /usr/share/doc/fzf/examples/key-bindings.bash
 
-# =============================================================
-# PROMPT  (replaces powerlevel10k)
-# user@host:dir (git-branch) — green on success, red arrow on failure
-# =============================================================
+# ---------- PROMPT ----------
+# 
+# user@host  ~/path (branch) [✘ exit-code]
+# $
 __git_branch() {
   local b
-  b=$(git symbolic-ref --short HEAD 2>/dev/null) && printf ' (%s)' "$b"
+  b=$(git symbolic-ref --short -q HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null) \
+    && printf ' (%s)' "$b"
 }
 __set_prompt() {
-  local ec=$?
-  local arrow='\[\e[32m\]'
-  [ "$ec" -ne 0 ] && arrow='\[\e[31m\]'
-  PS1="\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w\[\e[0;33m\]\$(__git_branch)\[\e[0m\] ${arrow}\\$\[\e[0m\] "
+  local ec=$?                      # must be first: captures last exit code
+  local rs='\[\e[0m\]' status=''
+  (( ec != 0 )) && status=" \[\e[1;31m\][✘ $ec]${rs}"
+  PS1="\n\[\e[1;32m\]\u\[\e[0;37m\]@\[\e[1;36m\]\h${rs}  \[\e[1;34m\]\w${rs}\[\e[0;33m\]\$(__git_branch)${rs}${status}\n\\$ "
 }
-PROMPT_COMMAND="__set_prompt; $PROMPT_COMMAND"
+PROMPT_COMMAND='__set_prompt; history -a'   # assigned (not appended) so reload is safe
 
-# =============================================================
-# ALIASES - GENERAL
-# =============================================================
-alias reload='source ~/.bashrc'
-alias bashrc='nano ~/.dev_bashrc'
-alias ll='ls -alh --color=auto'
-alias ls='ls --color=auto'
-alias lt='ls -R'
+# ---------- ALIASES (your basics; every native command still works) ----------
+# Format-only (same command name)
+alias ls='ls --color=auto -F'
+alias grep='grep --color=auto'
+alias ip='ip -c'
+alias df='df -hT'
+alias free='free -h'
+# Navigation / config
+alias ll='ls -alh'
+alias lt='tree -C -L 2'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias c='clear'
-alias grep='grep --color=auto'
-
-# =============================================================
-# ALIASES - GIT
-# =============================================================
+alias reload='source ~/.bashrc'
+alias bashrc='nano ~/.dev_bashrc'
+# Git
 alias g='git'
 alias gs='git status'
 alias ga='git add'
@@ -106,52 +98,12 @@ alias gpul='git pull'
 alias gco='git checkout'
 alias gcb='git checkout -b'
 alias gpsup='git push --set-upstream origin "$(git branch --show-current)"'
-alias gb='git branch'
-alias gm='git merge'
-alias gma='git merge --abort'
-alias gmc='git merge --continue'
-alias glog='git log --graph --pretty=format:"%C(yellow)%h%Creset -%C(cyan)%d%Creset %s %C(green)(%cr)%Creset %C(blue)<%ae>%Creset" --abbrev-commit --all'
-alias gtree='git log --graph --oneline --decorate --all'
 alias gd='git diff'
 alias gds='git diff --staged'
+alias glog='git log --oneline --graph --decorate --all'
 alias gst='git stash'
 alias gsp='git stash pop'
-alias grb='git rebase -i'
-alias grbc='git rebase --continue'
-alias grba='git rebase --abort'
-
-gacp() {
-  if [ -z "$1" ]; then
-    echo "Usage: gacp \"commit message\""
-    return 1
-  fi
-  git add . && git commit -m "$1" && git push
-}
-
-gbrm() {
-  local protected=(main master develop) b confirm
-  if [ -z "$1" ]; then
-    echo "Usage: gbrm <branch>"
-    return 1
-  fi
-  for b in "${protected[@]}"; do
-    if [[ "$1" == "$b" ]]; then
-      echo "Protected branch '$1' -- use git directly if you really mean it."
-      return 1
-    fi
-  done
-  read -r -p "Delete '$1' locally and on origin? [y/N] " confirm
-  if [[ $confirm == [yY] ]]; then
-    git branch -d "$1" && git push origin --delete "$1"
-    echo "Deleted."
-  else
-    echo "Cancelled."
-  fi
-}
-
-# =============================================================
-# ALIASES - DOCKER
-# =============================================================
+# Docker
 alias dkps='docker ps'
 alias dklog='docker logs -f'
 alias dkex='docker exec -it'
@@ -159,47 +111,7 @@ alias dkcu='docker compose up -d'
 alias dkcd='docker compose down'
 alias dkcub='docker compose up --build'
 alias dkclean='docker container prune -f && docker image prune -f'
-
-dkprune() {
-  local confirm
-  read -r -p "This removes ALL unused Docker images, containers, networks, and build cache. Continue? [y/N] " confirm
-  if [[ $confirm == [yY] ]]; then
-    docker system prune -af
-    echo "Pruned."
-  else
-    echo "Cancelled."
-  fi
-}
-
-# =============================================================
-# ALIASES - POSTGRESQL
-# =============================================================
-alias pgconn='psql -U postgres'
-
-# =============================================================
-# ALIASES - SECURITY / PORTS
-# =============================================================
-alias connections='sudo lsof -i'
-alias procs='ps aux | grep -v grep'
-alias ports-all='netstat -an | grep LISTEN'
-
-# =============================================================
-# ALIASES - SYSTEM MONITORING
-# =============================================================
-alias meminfo='free -h'
-alias diskinfo='df -h'
-alias dfi='df -hi'
-alias diskusage='du -sh * | sort -rh'
-alias cpuinfo='lscpu'
-alias osinfo='cat /etc/os-release'
-alias uptime-pretty='uptime -p'
-alias topcpu='ps aux --sort=-%cpu | head -15'
-alias topmem='ps aux --sort=-%mem | head -15'
-alias watch-cpu='watch -n 1 "ps aux --sort=-%cpu | head -15"'
-
-# =============================================================
-# ALIASES - SYSTEMD / SERVICES
-# =============================================================
+# Systemd
 alias sc='sudo systemctl'
 alias scs='sudo systemctl status'
 alias scr='sudo systemctl restart'
@@ -208,70 +120,29 @@ alias scd='sudo systemctl disable'
 alias jctl='sudo journalctl -xe'
 alias jctlf='sudo journalctl -f'
 alias jctlu='sudo journalctl -u'
-
-# =============================================================
-# ALIASES - PACKAGE MANAGEMENT (Ubuntu/Debian — apt)
-# Note: 'install' shadows /usr/bin/install in interactive shells only
-# =============================================================
-alias update='sudo apt update && sudo apt upgrade -y'
-alias install='sudo apt install -y'
-alias search='apt search'
-alias remove='sudo apt remove -y'
-alias listpkgs='apt list --installed'
-
-# =============================================================
-# ALIASES - NETWORK
-# =============================================================
+# Network
 alias localip="hostname -I | awk '{print \$1}'"
 alias publicip='curl -s ifconfig.me'
 alias myip='echo "Local: $(hostname -I | awk "{print \$1}") | Public: $(curl -s ifconfig.me)"'
-alias pingg='ping -c 4 8.8.8.8'
 alias openports='sudo ss -tulnp'
-alias whoisme='curl -s ipinfo.io'
-
-# =============================================================
-# ALIASES - FILE OPS
-# =============================================================
-alias biggest='du -ah . | sort -rh | head -20'
-alias countfiles='find . -type f | wc -l'
-
-extract() {
-  if [ -z "$1" ] || [ ! -f "$1" ]; then
-    echo "Usage: extract <archive>"
-    return 1
-  fi
-  case "$1" in
-    *.tar.gz|*.tgz)   tar -xvzf "$1" ;;
-    *.tar.bz2|*.tbz2) tar -xvjf "$1" ;;
-    *.tar.xz)         tar -xvJf "$1" ;;
-    *.tar)            tar -xvf  "$1" ;;
-    *.zip)            unzip "$1" ;;
-    *.gz)             gunzip "$1" ;;
-    *) echo "Don't know how to extract '$1'" ; return 1 ;;
-  esac
-}
-
-# =============================================================
-# ALIASES - MISC / SHELL
-# =============================================================
-alias envshow='env | sort'
-alias pathshow='echo $PATH | tr ":" "\n"'
-alias hist='history | tail -30'
-alias whereami='pwd && hostname'
+alias pingg='ping -c 4 8.8.8.8'
 
 mkcd() { mkdir -p "$1" && cd "$1" || return; }
 
-killport() {
-  if [ -z "$1" ]; then
-    echo "Usage: killport <port>"
-    return 1
-  fi
-  sudo lsof -ti tcp:"$1" | xargs -r sudo kill
+gacp() {
+  [ -z "$1" ] && { echo 'Usage: gacp "commit message"'; return 1; }
+  git add . && git commit -m "$1" && git push
 }
 
-# Pretty-print JSON: jsonpp '{"a":1}'  or  curl -s url | jsonpp
-jsonpp() {
-  if [ -n "$1" ]; then echo "$1" | jq .; else jq .; fi
+dkprune() {
+  local r
+  read -r -p "Remove ALL unused Docker images, containers, networks, cache? [y/N] " r
+  [[ $r == [yY] ]] && docker system prune -af || echo "Cancelled."
+}
+
+killport() {
+  [ -z "$1" ] && { echo "Usage: killport <port>"; return 1; }
+  sudo lsof -ti tcp:"$1" | xargs -r sudo kill
 }
 
 ports() {
@@ -282,51 +153,194 @@ ports() {
   done
 }
 
-envnew() {
-  if [ -e .env ]; then
-    echo ".env already exists -- not overwriting."
-    return 1
+# ---------- help: boxed cheatsheet ----------
+# Alias boxes:  alias | plain-English explanation (native command it runs)
+# Native boxes: native command | what it does
+# 'help' = everything, 'help <topic>' = one section. Unknown topics fall
+# through to the bash builtin (help cd, help type, ...).
+_HW=76
+_rep()    { local s; printf -v s '%*s' "$2" ''; printf '%s' "${s// /$1}"; }
+_sec()    { printf '\n┌─ %s ' "$1"; _rep ─ $((_HW - ${#1} - 3)); printf '┐\n'; }
+_row()    { printf '│ %-*s %-*s │\n' "$1" "$2" $((_HW - 3 - $1)) "$3"; }
+_a()      { _row 16 "$@"; }
+_n()      { _row 34 "$@"; }
+_end()    { printf '└'; _rep ─ "$_HW"; printf '┘\n'; }
+_banner() {
+  local t="TERMINAL CHEATSHEET" l=$(( (_HW - 19) / 2 ))
+  printf '\n╔'; _rep ═ "$_HW"; printf '╗\n'
+  printf '║%*s%s%*s║\n' "$l" '' "$t" $((_HW - 19 - l)) ''
+  printf '╚'; _rep ═ "$_HW"; printf '╝\n'
+}
+
+_help_topic() {
+  case "${1:-}" in
+    nav|navigation)
+      _sec "NAVIGATION"
+      _a ll            "List files with details, incl. hidden (ls -alh)"
+      _a ls            "List files, colored; / marks folders (ls -F)"
+      _a lt            "Show folders as a tree, 2 levels deep (tree -L 2)"
+      _a ..            "Go up one folder (cd ..)"
+      _a ...           "Go up two folders (cd ../..)"
+      _a c             "Clear the terminal screen (clear)"
+      _a "mkcd <name>" "Make a directory and cd into it (mkdir -p + cd)"
+      _end ;;
+    config)
+      _sec "CONFIG"
+      _a reload        "Reload shell config after editing (source ~/.bashrc)"
+      _a bashrc        "Edit your aliases file (nano ~/.dev_bashrc)"
+      _a help          "Show this whole cheatsheet"
+      _a "help <topic>" "Show one section, e.g. help git, help docker"
+      _end ;;
+    network|net)
+      _sec "NETWORK"
+      _a localip       "Show the VM's local IP (hostname -I)"
+      _a publicip      "Show your public IP as the internet sees it (curl)"
+      _a myip          "Show local + public IP in one shot"
+      _a openports     "List listening ports and their process (ss -tulnp)"
+      _a ports         "Check dev ports 8080, 5432, 6379: in use or free"
+      _a "killport <port>" "Kill the process using a port (lsof + kill)"
+      _a pingg         "Ping 8.8.8.8 4 times to test internet (ping -c 4)"
+      _end
+      _sec "NETWORK - NATIVE COMMANDS"
+      _n "ip -br -c a"                 "Brief colored list of interfaces + IPs"
+      _n "ip r"                        "Routing table and default gateway"
+      _n "dig +short example.com"      "Look up a DNS record"
+      _n "curl -I https://host"        "Fetch only the HTTP headers of a URL"
+      _n "nc -zv host 5432"            "Is the port open through the firewall?"
+      _n "traceroute host"             "Show each hop packets take to a host"
+      _n "sudo tcpdump -i any port 80" "Capture live traffic on a port"
+      _end ;;
+    git)
+      _sec "GIT - DAILY WORKFLOW"
+      _a g             "Shorthand for git"
+      _a gs            "Show changed, staged, untracked files (git status)"
+      _a "ga <file>"   "Stage one file for the next commit (git add)"
+      _a gaa           "Stage all changes in this folder (git add .)"
+      _a 'gcm "msg"'   "Commit staged changes with a message (git commit -m)"
+      _a 'gacm "msg"'  "Stage all + commit (git add . && git commit -m)"
+      _a 'gacp "msg"'  "Stage all + commit + push in one go"
+      _a gp            "Upload your commits to the remote (git push)"
+      _a gpul          "Download + merge remote changes (git pull)"
+      _a "gco <branch>" "Switch to an existing branch (git checkout)"
+      _a "gcb <name>"  "Create a new branch and switch to it (checkout -b)"
+      _a gpsup         "Push a new branch + link it to origin (--set-upstream)"
+      _a gd            "Show unstaged changes line by line (git diff)"
+      _a gds           "Show staged changes before commit (git diff --staged)"
+      _a glog          "Commit history as a graph (git log --oneline --graph)"
+      _a "gst / gsp"   "Stash changes / restore stashed (git stash [pop])"
+      _end ;;
+    docker)
+      _sec "DOCKER"
+      _a dkps          "List running containers (docker ps)"
+      _a "dklog <c>"   "Follow a container's logs live (docker logs -f)"
+      _a "dkex <c> sh" "Open a shell inside a container (docker exec -it)"
+      _a dkcu          "Start the compose stack in background (compose up -d)"
+      _a dkcd          "Stop and remove the compose stack (compose down)"
+      _a dkcub         "Rebuild images + start the stack (compose up --build)"
+      _a dkclean       "Delete stopped containers + dangling images (prune)"
+      _a dkprune       "Delete ALL unused Docker data, asks first (prune -af)"
+      _end ;;
+    systemd|system|svc)
+      _sec "SYSTEMD"
+      _a sc            "Run systemctl as root (sudo systemctl)"
+      _a "scs <svc>"   "Is the service running? Status + recent logs"
+      _a "scr <svc>"   "Restart a service to apply config (restart)"
+      _a "sce <svc>"   "Start a service automatically at boot (enable)"
+      _a "scd <svc>"   "Stop starting a service at boot (disable)"
+      _a jctl          "Recent system errors with context (journalctl -xe)"
+      _a jctlf         "Follow all system logs live (journalctl -f)"
+      _a "jctlu <svc>" "Show logs of one service (journalctl -u)"
+      _end ;;
+    monitor|proc)
+      _sec "MONITORING - NATIVE COMMANDS"
+      _n "htop"                        "Live CPU and memory per process"
+      _n "free -h"                     "Show memory usage, human-readable"
+      _n "df -hT"                      "Disk usage per filesystem, with type"
+      _n "ps aux --sort=-%mem | head"  "Top 10 memory-hungry processes"
+      _n "lsof -i :8080"               "Which process owns a port"
+      _n "uptime"                      "How long up + load averages"
+      _end ;;
+    pkg|apt)
+      _sec "PACKAGES - NATIVE COMMANDS (apt)"
+      _n "sudo apt update"             "Refresh the package list"
+      _n "sudo apt install -y <pkg>"   "Install a package (same in cloud-init)"
+      _n "apt search <term>"           "Find packages by keyword"
+      _n "apt-cache policy <pkg>"      "Installed vs available version"
+      _n "sudo apt remove <pkg>"       "Uninstall a package"
+      _end ;;
+    files|fs)
+      _sec "FILES - NATIVE COMMANDS"
+      _n "ls -lah"                     "Permissions, owner, size of files"
+      _n "find . -name '*.tf'"         "Find files by name (e.g. Terraform)"
+      _n "grep -rn 'text' ."           "Search text inside all files"
+      _n "chmod 600 key.pem"           "Lock a private key to owner only"
+      _n "tar -xzf f.tgz"              "Unpack a .tar.gz archive"
+      _n "du -sh * | sort -rh | head"  "Find what is filling the disk"
+      _end ;;
+    ssh)
+      _sec "SSH - NATIVE COMMANDS"
+      _n "ssh -i key.pem user@host"    "Connect to a server with a key file"
+      _n "ssh-keygen -t ed25519"       "Create a new SSH key pair"
+      _n "ssh-copy-id user@host"       "Install your public key on a server"
+      _n "scp file user@host:/path"    "Copy a file to a server"
+      _n "ssh -L 5432:db:5432 host"    "Tunnel a local port to a private DB"
+      _end ;;
+    python|py)
+      _sec "PYTHON - NATIVE COMMANDS"
+      _n "python3 -m venv .venv"       "Create an isolated environment"
+      _n "source .venv/bin/activate"   "Enter the virtual environment"
+      _n "pip install -r requirements.txt" "Install pinned dependencies"
+      _n "python3 -m http.server 8000" "Serve this folder on port 8000 (test)"
+      _n "python3 -m json.tool"        "Pretty-print JSON piped in"
+      _end ;;
+    terraform|tf)
+      _sec "TERRAFORM - NATIVE COMMANDS"
+      _n "terraform init"              "Download providers and modules"
+      _n "terraform fmt"               "Auto-format .tf files"
+      _n "terraform validate"          "Check configuration syntax"
+      _n "terraform plan"              "Preview changes; nothing is changed"
+      _n "terraform apply"             "Create/update the infrastructure"
+      _n "terraform state list"        "List resources Terraform manages"
+      _n "terraform destroy"           "Delete everything it manages"
+      _end ;;
+    env)
+      _sec "ENVIRONMENT - NATIVE COMMANDS"
+      _n "env | sort"                  "List all environment variables"
+      _n "export VAR=value"            "Set a variable for child processes"
+      _n 'echo $PATH | tr ":" "\n"'    "Show folders searched for commands"
+      _n "printenv VAR"                "Print one variable's value"
+      _n "type <cmd>"                  "Is it an alias, function or program?"
+      _end ;;
+    keys)
+      _sec "KEYS"
+      _n "Ctrl-R"                      "Fuzzy search command history"
+      _n "Ctrl-T"                      "Fuzzy pick a file path"
+      _n "Up / Down"                   "Cycle history matching what you typed"
+      _n "Tab Tab"                     "Autocomplete commands, paths, flags"
+      _n "Ctrl-A / Ctrl-E"             "Jump to line start / end"
+      _n "Ctrl-C / Ctrl-L"             "Cancel command / clear screen"
+      _end ;;
+    *) builtin help "$@" ;;
+  esac
+}
+
+help() {
+  if [ -z "${1:-}" ] || [ "$1" = all ]; then
+    { _banner
+      local t
+      for t in nav config network git docker systemd monitor pkg files ssh python terraform env keys; do
+        _help_topic "$t"
+      done
+    } | if command -v less >/dev/null; then less -RFX; else cat; fi
+  else
+    _help_topic "$@"
   fi
-  cat > .env << 'ENVEOF'
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/dbname
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=password
-SERVER_PORT=8080
-ENVEOF
-  echo ".env created"
 }
+complete -W "all nav config network git docker systemd monitor pkg files ssh python terraform env keys" help
 
-# =============================================================
-# HELP  (named 'cheat' so it doesn't shadow bash's builtin 'help')
-# =============================================================
-cheat() {
-  cat << 'CHEATSHEET'
-============================================================
-  BASH DEV VM CHEATSHEET
-============================================================
-NAVIGATION:  ll  ls  lt  ..  ...  c  mkcd <name>
-GIT:         gs  gaa  gcm "msg"  gacp "msg"  gp  gpul  gco  gcb
-             glog  gtree  gd  gst/gsp  gbrm <name>
-DOCKER:      dkps  dklog  dkex  dkcu  dkcd  dkclean  dkprune
-MONITORING:  meminfo  diskinfo  dfi  diskusage  cpuinfo  osinfo
-             topcpu  topmem  watch-cpu  uptime-pretty
-SYSTEMD:     sc <svc>  scs  scr  sce/scd  jctl  jctlf  jctlu <svc>
-PACKAGES:    update  install <pkg>  search <term>  remove <pkg>
-NETWORK:     localip  publicip  myip  pingg  openports  whoisme
-FILE OPS:    biggest  countfiles  extract <file>
-SHELL:       envshow  pathshow  hist  whereami
-MISC:        reload  bashrc  envnew  jsonpp  killport <port>  ports
-KEYS:        Ctrl-R fuzzy history   Ctrl-T fuzzy file   Up/Down prefix search
-CHEATSHEET
-}
-
-# =============================================================
-# WELCOME MESSAGE  (once per shell)
-# =============================================================
-# Shown once per shell, not again on 'reload'
+# ---------- WELCOME (once per shell) ----------
 if [[ -z ${_WELCOME_SHOWN:-} ]]; then
   _WELCOME_SHOWN=1
-  echo "Welcome to your dev VM, $(whoami)!"
-  date '+%A, %d %B %Y'
-  echo "Type 'cheat' to see all your shortcuts"
+  echo "Welcome, $(whoami). $(date '+%A, %d %B %Y')"
+  echo "Type 'help' for the cheatsheet."
 fi

@@ -19,8 +19,8 @@ dev-launch() {
     echo "VM '$DEV_VM' already exists. Use dev-start to boot it, or dev-delete to remove it first."
     return 1
   fi
-  echo "Launching $DEV_VM (Ubuntu 24.04, 2 CPUs, 2GB RAM, 20GB disk)..."
-  multipass launch 24.04 --name "$DEV_VM" --cpus 2 --memory 2G --disk 20G \
+  echo "Launching $DEV_VM (Ubuntu 24.04, 2 CPUs, 4GB RAM, 20GB disk)..."
+  multipass launch 24.04 --name "$DEV_VM" --cpus 2 --memory 4G --disk 20G \
     --timeout 600 --cloud-init "$DEV_DOTFILES/cloud-init.yaml" || return 1
   echo "Waiting for provisioning (apt packages, docker, jdk)..."
   until multipass exec "$DEV_VM" -- test -f /home/ubuntu/.provisioned 2>/dev/null; do

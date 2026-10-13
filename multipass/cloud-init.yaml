@@ -26,11 +26,32 @@ packages:
   - openjdk-21-jdk-headless
   - postgresql-client
   - docker.io
+  - httpie
+  - tealdeer
+  - duf
+  - zoxide
+  - btop
+  - fd-find
+  - bat
+  - eza
+  - dnsutils
+  - traceroute
+  - tcpdump
+  - python3-venv
+  - python3-pip
 
 runcmd:
   # Docker without sudo (takes effect on next login)
   - usermod -aG docker ubuntu
   # Load our aliases from ~/.bashrc (file itself is pushed by dev-launch)
   - grep -q 'dev_bashrc' /home/ubuntu/.bashrc || echo '[ -f ~/.dev_bashrc ] && . ~/.dev_bashrc' >> /home/ubuntu/.bashrc
+  # Ubuntu renames these binaries; expose them under their normal names
+  - mkdir -p /home/ubuntu/.local/bin
+  - ln -sf /usr/bin/batcat /home/ubuntu/.local/bin/bat
+  - ln -sf /usr/bin/fdfind /home/ubuntu/.local/bin/fd
+  - chown -R ubuntu:ubuntu /home/ubuntu/.local
+  - curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --batch --yes --dearmor -o /usr/share/keyrings/hashicorp.gpg
+  - echo "deb [signed-by=/usr/share/keyrings/hashicorp.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
+  - apt-get update && apt-get install -y terraform
   - touch /home/ubuntu/.provisioned
   - chown ubuntu:ubuntu /home/ubuntu/.provisioned /home/ubuntu/.bashrc
