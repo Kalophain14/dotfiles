@@ -12,7 +12,9 @@ typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 ZSH_DISABLE_COMPFIX=true
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting z fzf)
+# zoxide (below) replaces the `z` plugin; syntax-highlighting and
+# history-substring-search must be last (needed for the ↑/↓ keybindings)
+plugins=(git zsh-autosuggestions fzf zsh-syntax-highlighting history-substring-search)
 source $ZSH/oh-my-zsh.sh
 
 # Unalias any oh-my-zsh aliases that shadow our functions
@@ -63,6 +65,7 @@ export FZF_DEFAULT_OPTS='--height 40% --border'
 # =============================================================
 # AWS CLI SHORTCUTS
 # =============================================================
+export AWS_PAGER=""   # Don't open `less` for long AWS CLI output
 [ -f ~/dotfiles/zsh/aws-cli-shortcuts.sh ] && source ~/dotfiles/zsh/aws-cli-shortcuts.sh
 
 # Zoxide (replaces cd)
@@ -596,7 +599,7 @@ function help {
 │  logstail <grp>  Live-tail a CloudWatch log group                   │
 │  logserr <grp>   Filter log group for errors                        │
 │  lfninv <fn>     Invoke a Lambda function                           │
-│  ddbscan <tbl>   Dump all items in a DynamoDB table                 │
+│  ddbscan <tbl>   Scan first 25 items of a DynamoDB table            │
 │  ssmget <name>   Decrypt an SSM parameter                           │
 │  awscost         Month-to-date cost by service                      │
 └──────────────────────────────────────────────────────────────────┘
@@ -650,11 +653,13 @@ bindkey '^[[1;5D' backward-word  # Ctrl+Left
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # =============================================================
+# EC2 INSTANCE ID (default target for ec2start / ec2stop / ec2ip / ec2ssh ...)
+# =============================================================
+export EC2_ID=i-02d0e80968c9dec08
+
+# =============================================================
 # SDKMAN
 # THIS MUST BE AT THE VERY END OF THE FILE FOR SDKMAN TO WORK!!!
 # =============================================================
 export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"export EC2_ID=i-i-02d0e80968c9dec08
-
-export EC2_ID=i-0abc123def456
-export EC2_ID=i-02d0e80968c9dec08
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
