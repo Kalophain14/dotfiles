@@ -12,9 +12,9 @@ typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 ZSH_DISABLE_COMPFIX=true
-# zoxide (below) replaces the `z` plugin; syntax-highlighting and
-# history-substring-search must be last (needed for the ↑/↓ keybindings)
-plugins=(git zsh-autosuggestions fzf zsh-syntax-highlighting history-substring-search)
+# zoxide (below) replaces the `z` plugin, fzf is loaded via `fzf --zsh` below;
+# syntax-highlighting and history-substring-search must be last (↑/↓ keybindings)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting history-substring-search)
 source $ZSH/oh-my-zsh.sh
 
 # Unalias any oh-my-zsh aliases that shadow our functions
@@ -32,18 +32,24 @@ setopt HIST_IGNORE_SPACE
 setopt SHARE_HISTORY
 setopt HIST_VERIFY
 setopt EXTENDED_HISTORY
+setopt HIST_REDUCE_BLANKS
+setopt HIST_FIND_NO_DUPS
 
 # =============================================================
 # EDITOR
 # =============================================================
-export EDITOR='code'
-export VISUAL='code'
+# --wait: git (rebase -i, commit) must wait for VS Code to close the file
+export EDITOR='code --wait'
+export VISUAL='code --wait'
 
 # =============================================================
 # PATH & TOOLS
 # =============================================================
 # Homebrew shell environment (must come first — other tool paths below assume it)
 eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Keep PATH entries unique (so re-sourcing never duplicates them)
+typeset -U path PATH
 
 export PATH="$HOME/.local/bin:$PATH"
 
@@ -57,8 +63,8 @@ export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
 export NVM_DIR="$HOME/.nvm"
 [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && source "/opt/homebrew/opt/nvm/nvm.sh" --no-use
 
-# FZF
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# FZF (needs fzf >= 0.48; replaces the oh-my-zsh fzf plugin and ~/.fzf.zsh)
+command -v fzf >/dev/null && source <(fzf --zsh)
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_DEFAULT_OPTS='--height 40% --border'
 
@@ -68,29 +74,21 @@ export FZF_DEFAULT_OPTS='--height 40% --border'
 export AWS_PAGER=""   # Don't open `less` for long AWS CLI output
 [ -f ~/dotfiles/zsh/aws-cli-shortcuts.sh ] && source ~/dotfiles/zsh/aws-cli-shortcuts.sh
 
-# Zoxide (replaces cd)
-eval "$(zoxide init zsh)"
+# Zoxide (--cmd cd makes it replace cd; also provides z / zi)
+eval "$(zoxide init zsh --cmd cd)"
 
-# Thefuck (auto-correct mistyped commands)
-eval "$(thefuck --alias)"
+# Thefuck (auto-correct mistyped commands) - lazy-loaded: costs nothing until first use
+fuck() {
+  unfunction fuck
+  eval "$(thefuck --alias)"
+  eval "fuck"
+}
 
 # Pyenv
 eval "$(pyenv init -)"
 
 # Direnv
-function _direnv_hook {
-  trap -- '' SIGINT
-  eval "$("/opt/homebrew/bin/direnv" export zsh)"
-  trap - SIGINT
-}
-typeset -ag precmd_functions
-if (( ! ${precmd_functions[(I)_direnv_hook]} )); then
-  precmd_functions=(_direnv_hook $precmd_functions)
-fi
-typeset -ag chpwd_functions
-if (( ! ${chpwd_functions[(I)_direnv_hook]} )); then
-  chpwd_functions=(_direnv_hook $chpwd_functions)
-fi
+eval "$(direnv hook zsh)"
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
@@ -98,7 +96,7 @@ fi
 # =============================================================
 # ALIASES - GENERAL
 # =============================================================
-alias reload='source ~/.zshrc'       # Reload terminal config
+alias reload='exec zsh'              # Restart shell (reloads config cleanly)
 alias zshrc='code ~/.zshrc'          # Edit terminal config
 alias dotfiles='code ~/dotfiles'     # Open dotfiles folder
 alias ll='eza -al --icons'           # List files with details
@@ -151,7 +149,7 @@ alias gunpushed='git log @{u}..HEAD --oneline'     # Commits not yet pushed
 # --- Undoing Things ---
 alias gundo='git reset'                              # Undo to specific hash
 alias gundos='git reset --soft HEAD~1'               # Undo last commit, keep staged
-alias gundoh='git reset --hard HEAD~1'               # Hard reset, discard all changes
+alias gundoh='gundohc'                               # Hard reset (always asks first)
 alias gundomh='git reset --mixed HEAD~1'             # Undo last commit, unstage changes
 alias gst='git stash'                                # Stash changes
 alias gsp='git stash pop'                            # Restore stashed changes
@@ -227,6 +225,21 @@ alias myip='echo "Local: $(ipconfig getifaddr en0) | Public: $(curl -s ifconfig.
 alias pgcli='pgcli -U postgres'            # Better Postgres CLI with autocomplete
 
 # =============================================================
+# ALIASES - TERRAFORM
+# =============================================================
+alias tf='terraform'                                 # Shorthand for terraform
+alias tfi='terraform init'                           # Initialise working dir
+alias tfiu='terraform init -upgrade'                 # Init and upgrade providers
+alias tfv='terraform validate'                       # Validate config
+alias tff='terraform fmt -recursive'                 # Format all .tf files
+alias tfp='terraform plan'                           # Preview changes
+alias tfa='terraform apply'                          # Apply changes (asks to confirm)
+alias tfo='terraform output'                         # Show outputs
+alias tfs='terraform state list'                     # List resources in state
+alias tfw='terraform workspace'                      # Manage workspaces
+alias tfr='terraform providers'                      # Show required providers
+
+# =============================================================
 # ALIASES - SECURITY
 # =============================================================
 alias connections='sudo lsof -i'                    # All open network connections
@@ -253,13 +266,16 @@ function mkcd { mkdir -p "$1" && cd "$1" }
 function gacp { git add . && git commit -m "$1" && git push }
 
 # Kill process on port
-function killport { lsof -ti tcp:$1 | xargs kill }
+function killport { lsof -ti tcp:"$1" | xargs kill }
 
 # Check common dev ports
 function ports {
-  echo "=== 8080 (Spring) ===" && lsof -ti tcp:8080 | xargs ps -p 2>/dev/null || echo "free"
-  echo "=== 5432 (Postgres) ===" && lsof -ti tcp:5432 | xargs ps -p 2>/dev/null || echo "free"
-  echo "=== 6379 (Redis) ===" && lsof -ti tcp:6379 | xargs ps -p 2>/dev/null || echo "free"
+  local entry p
+  for entry in "8080:Spring" "5432:Postgres" "6379:Redis"; do
+    p=${entry%%:*}
+    echo "=== $p (${entry#*:}) ==="
+    lsof -nP -iTCP:$p -sTCP:LISTEN || echo "free"
+  done
 }
 
 # Create new Spring Boot project
@@ -382,16 +398,34 @@ function dog { dig +short "$1" }
 # Delete all merged branches except main/master/develop
 function gclean {
     echo "Merged branches that will be deleted:"
-    git branch --merged | grep -vE "^\*|main|master|develop"
+    git branch --merged | grep -vE '^\*|^[[:space:]]*(main|master|develop)$'
     echo ""
     echo -n "Delete these branches? [y/N] "
     read confirm
     if [[ "$confirm" == [yY] ]]; then
-        git branch --merged | grep -vE "^\*|main|master|develop" | xargs -r git branch -d
+        git branch --merged | grep -vE '^\*|^[[:space:]]*(main|master|develop)$' | xargs -r git branch -d
         echo "Cleaned."
     else
         echo "Cancelled."
     fi
+}
+
+# Terraform destroy with an extra confirmation on top of Terraform's own prompt
+function tfd {
+    echo -n "Run 'terraform destroy' in $(pwd)? [y/N] "
+    read confirm
+    if [[ $confirm == [yY] ]]; then
+        terraform destroy "$@"
+    else
+        echo "Cancelled."
+    fi
+}
+
+# Terraform: plan, save to a file, then apply exactly that plan
+function tfpa {
+    terraform plan -out=tfplan && \
+    echo -n "Apply this saved plan? [y/N] " && read confirm && \
+    [[ $confirm == [yY] ]] && terraform apply tfplan; rm -f tfplan
 }
 
 # =============================================================
@@ -498,7 +532,7 @@ function help {
 ┌─ GIT ─ UNDOING THINGS ───────────────────────────────────────────┐
 │  gundo <hash>    Undo to specific commit hash                    │
 │  gundos          Undo last commit, keep changes staged           │
-│  gundoh          Hard reset, discard ALL changes                 │
+│  gundoh          Hard reset (always asks first)                  │
 │  gundohc         Hard reset with confirmation                    │
 │  gundomh         Undo last commit, unstage changes             │
 │  grev            Create undo commit (safe for shared branches)   │
@@ -604,6 +638,18 @@ function help {
 │  awscost         Month-to-date cost by service                      │
 └──────────────────────────────────────────────────────────────────┘
 
+┌─ TERRAFORM ──────────────────────────────────────────────────────┐
+│  tf              terraform shorthand                             │
+│  tfi / tfiu      Init / init with provider upgrade               │
+│  tfv / tff       Validate / format                               │
+│  tfp             Plan                                            │
+│  tfa             Apply                                           │
+│  tfpa            Plan, save, confirm, then apply that plan       │
+│  tfd             Destroy (extra confirmation)                    │
+│  tfo / tfs       Outputs / list state                            │
+│  tfw / tfr       Workspaces / providers                          │
+└──────────────────────────────────────────────────────────────────┘
+
 ┌─ UTILITIES ──────────────────────────────────────────────────────┐
 │  http            HTTPie - test HTTP endpoints                        │
 │  pp              Prettier ping                                       │
@@ -653,9 +699,10 @@ bindkey '^[[1;5D' backward-word  # Ctrl+Left
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # =============================================================
-# EC2 INSTANCE ID (default target for ec2start / ec2stop / ec2ip / ec2ssh ...)
+# LOCAL OVERRIDES (untracked, machine-specific: EC2_ID, tokens, ...)
+# Keep this file OUT of the dotfiles repo. Must stay before SDKMAN.
 # =============================================================
-export EC2_ID=i-02d0e80968c9dec08
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
 # =============================================================
 # SDKMAN
